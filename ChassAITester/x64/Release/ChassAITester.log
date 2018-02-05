@@ -1,0 +1,29 @@
+﻿  ChassAITester.cpp
+c:\users\xavier\projects\c++\win32\chessv2\libraries\headers\moves\factories\PawnMoveFactory.h(34): warning C4114: same type qualifier used more than once
+c:\users\xavier\projects\c++\win32\chessv2\libraries\headers\moves\factories\PawnMoveFactory.h(35): warning C4114: same type qualifier used more than once
+c:\users\xavier\projects\c++\win32\chessv2\libraries\headers\moves\factories\RookMoveFactory.h(51): warning C4114: same type qualifier used more than once
+c:\users\xavier\projects\c++\win32\chessv2\libraries\headers\moves\factories\RookMoveFactory.h(52): warning C4114: same type qualifier used more than once
+c:\users\xavier\projects\c++\win32\chessv2\libraries\headers\moves\factories\RookMoveFactory.h(53): warning C4114: same type qualifier used more than once
+c:\users\xavier\projects\c++\win32\chessv2\libraries\headers\moves\factories\RookMoveFactory.h(54): warning C4114: same type qualifier used more than once
+c:\users\xavier\projects\c++\win32\chessv2\libraries\headers\moves\factories\BishopMoveFactory.h(51): warning C4114: same type qualifier used more than once
+c:\users\xavier\projects\c++\win32\chessv2\libraries\headers\moves\factories\BishopMoveFactory.h(52): warning C4114: same type qualifier used more than once
+c:\users\xavier\projects\c++\win32\chessv2\libraries\headers\moves\factories\BishopMoveFactory.h(53): warning C4114: same type qualifier used more than once
+c:\users\xavier\projects\c++\win32\chessv2\libraries\headers\moves\factories\BishopMoveFactory.h(54): warning C4114: same type qualifier used more than once
+c:\users\xavier\projects\c++\win32\chessv2\libraries\headers\moves\factories\KnightMoveFactory.h(24): warning C4114: same type qualifier used more than once
+c:\users\xavier\projects\c++\win32\chessv2\libraries\headers\moves\factories\QueenMoveFactory.h(81): warning C4114: same type qualifier used more than once
+c:\users\xavier\projects\c++\win32\chessv2\libraries\headers\moves\factories\QueenMoveFactory.h(82): warning C4114: same type qualifier used more than once
+c:\users\xavier\projects\c++\win32\chessv2\libraries\headers\moves\factories\QueenMoveFactory.h(83): warning C4114: same type qualifier used more than once
+c:\users\xavier\projects\c++\win32\chessv2\libraries\headers\moves\factories\QueenMoveFactory.h(84): warning C4114: same type qualifier used more than once
+c:\users\xavier\projects\c++\win32\chessv2\libraries\headers\moves\factories\QueenMoveFactory.h(85): warning C4114: same type qualifier used more than once
+c:\users\xavier\projects\c++\win32\chessv2\libraries\headers\moves\factories\QueenMoveFactory.h(86): warning C4114: same type qualifier used more than once
+c:\users\xavier\projects\c++\win32\chessv2\libraries\headers\moves\factories\QueenMoveFactory.h(87): warning C4114: same type qualifier used more than once
+c:\users\xavier\projects\c++\win32\chessv2\libraries\headers\moves\factories\QueenMoveFactory.h(88): warning C4114: same type qualifier used more than once
+c:\users\xavier\projects\c++\win32\chessv2\libraries\headers\moves\factories\KingMoveFactory.h(24): warning C4114: same type qualifier used more than once
+c:\users\xavier\projects\c++\win32\chessv2\chassaitester\../Libraries/Headers/Artificial/Artificial.h(21): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+c:\users\xavier\projects\c++\win32\chessv2\chassaitester\../Libraries/Headers/Artificial/Artificial.h(63): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+  Generating code
+  1 of 922 functions ( 0.1%) were compiled, the rest were copied from previous compilation.
+    0 functions were new in current compilation
+    0 functions had inline decision re-evaluated but remain unchanged
+  Finished generating code
+  ChassAITester.vcxproj -> C:\Users\Xavier\Projects\C++\win32\ChessV2\x64\Release\ChassAITester.exe

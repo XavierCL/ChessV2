@@ -1,0 +1,14 @@
+#ifndef GAME_STATUS_H
+#define GAME_STATUS_H
+
+enum class GameStatus
+{
+	LIVE,
+	WHITE_WIN,
+	BLACK_WIN,
+	FIFTY_MOVE,
+	THREEFOLD_REPETITION,
+	NO_LEGAL_MOVE
+};
+
+#endif

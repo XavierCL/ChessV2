@@ -1,0 +1,89 @@
+﻿  GameUI.cpp
+c:\users\xavier\projects\c++\win32\chessv2\libraries\headers\moves\factories\pawnmovefactory.h(34): warning C4114: same type qualifier used more than once
+c:\users\xavier\projects\c++\win32\chessv2\libraries\headers\moves\factories\pawnmovefactory.h(35): warning C4114: same type qualifier used more than once
+c:\users\xavier\projects\c++\win32\chessv2\libraries\headers\moves\factories\rookmovefactory.h(51): warning C4114: same type qualifier used more than once
+c:\users\xavier\projects\c++\win32\chessv2\libraries\headers\moves\factories\rookmovefactory.h(52): warning C4114: same type qualifier used more than once
+c:\users\xavier\projects\c++\win32\chessv2\libraries\headers\moves\factories\rookmovefactory.h(53): warning C4114: same type qualifier used more than once
+c:\users\xavier\projects\c++\win32\chessv2\libraries\headers\moves\factories\rookmovefactory.h(54): warning C4114: same type qualifier used more than once
+c:\users\xavier\projects\c++\win32\chessv2\libraries\headers\moves\factories\bishopmovefactory.h(51): warning C4114: same type qualifier used more than once
+c:\users\xavier\projects\c++\win32\chessv2\libraries\headers\moves\factories\bishopmovefactory.h(52): warning C4114: same type qualifier used more than once
+c:\users\xavier\projects\c++\win32\chessv2\libraries\headers\moves\factories\bishopmovefactory.h(53): warning C4114: same type qualifier used more than once
+c:\users\xavier\projects\c++\win32\chessv2\libraries\headers\moves\factories\bishopmovefactory.h(54): warning C4114: same type qualifier used more than once
+c:\users\xavier\projects\c++\win32\chessv2\libraries\headers\moves\factories\knightmovefactory.h(24): warning C4114: same type qualifier used more than once
+c:\users\xavier\projects\c++\win32\chessv2\libraries\headers\moves\factories\queenmovefactory.h(81): warning C4114: same type qualifier used more than once
+c:\users\xavier\projects\c++\win32\chessv2\libraries\headers\moves\factories\queenmovefactory.h(82): warning C4114: same type qualifier used more than once
+c:\users\xavier\projects\c++\win32\chessv2\libraries\headers\moves\factories\queenmovefactory.h(83): warning C4114: same type qualifier used more than once
+c:\users\xavier\projects\c++\win32\chessv2\libraries\headers\moves\factories\queenmovefactory.h(84): warning C4114: same type qualifier used more than once
+c:\users\xavier\projects\c++\win32\chessv2\libraries\headers\moves\factories\queenmovefactory.h(85): warning C4114: same type qualifier used more than once
+c:\users\xavier\projects\c++\win32\chessv2\libraries\headers\moves\factories\queenmovefactory.h(86): warning C4114: same type qualifier used more than once
+c:\users\xavier\projects\c++\win32\chessv2\libraries\headers\moves\factories\queenmovefactory.h(87): warning C4114: same type qualifier used more than once
+c:\users\xavier\projects\c++\win32\chessv2\libraries\headers\moves\factories\queenmovefactory.h(88): warning C4114: same type qualifier used more than once
+c:\users\xavier\projects\c++\win32\chessv2\libraries\headers\moves\factories\kingmovefactory.h(24): warning C4114: same type qualifier used more than once
+c:\users\xavier\projects\c++\win32\chessv2\libraries\headers\artificial\artificial.h(21): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+c:\users\xavier\projects\c++\win32\chessv2\libraries\headers\artificial\artificial.h(63): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+c:\users\xavier\projects\c++\win32\chessv2\chessv2\gameui.cpp(228): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
+c:\users\xavier\projects\c++\win32\chessv2\chessv2\gameui.cpp(227): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
+c:\users\xavier\projects\c++\win32\chessv2\chessv2\gameui.cpp(226): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
+c:\users\xavier\projects\c++\win32\chessv2\chessv2\gameui.cpp(225): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
+c:\users\xavier\projects\c++\win32\chessv2\chessv2\gameui.cpp(234): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
+c:\users\xavier\projects\c++\win32\chessv2\chessv2\gameui.cpp(233): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
+c:\users\xavier\projects\c++\win32\chessv2\chessv2\gameui.cpp(232): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
+c:\users\xavier\projects\c++\win32\chessv2\chessv2\gameui.cpp(231): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
+c:\users\xavier\projects\c++\win32\chessv2\chessv2\gameui.cpp(240): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
+c:\users\xavier\projects\c++\win32\chessv2\chessv2\gameui.cpp(239): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
+c:\users\xavier\projects\c++\win32\chessv2\chessv2\gameui.cpp(238): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
+c:\users\xavier\projects\c++\win32\chessv2\chessv2\gameui.cpp(237): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
+c:\users\xavier\projects\c++\win32\chessv2\chessv2\gameui.cpp(246): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
+c:\users\xavier\projects\c++\win32\chessv2\chessv2\gameui.cpp(245): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
+c:\users\xavier\projects\c++\win32\chessv2\chessv2\gameui.cpp(244): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
+c:\users\xavier\projects\c++\win32\chessv2\chessv2\gameui.cpp(243): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
+c:\users\xavier\projects\c++\win32\chessv2\chessv2\gameui.cpp(255): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
+c:\users\xavier\projects\c++\win32\chessv2\chessv2\gameui.cpp(254): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
+c:\users\xavier\projects\c++\win32\chessv2\chessv2\gameui.cpp(253): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
+c:\users\xavier\projects\c++\win32\chessv2\chessv2\gameui.cpp(252): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
+c:\users\xavier\projects\c++\win32\chessv2\chessv2\gameui.cpp(261): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
+c:\users\xavier\projects\c++\win32\chessv2\chessv2\gameui.cpp(260): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
+c:\users\xavier\projects\c++\win32\chessv2\chessv2\gameui.cpp(259): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
+c:\users\xavier\projects\c++\win32\chessv2\chessv2\gameui.cpp(258): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
+c:\users\xavier\projects\c++\win32\chessv2\chessv2\gameui.cpp(267): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
+c:\users\xavier\projects\c++\win32\chessv2\chessv2\gameui.cpp(266): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
+c:\users\xavier\projects\c++\win32\chessv2\chessv2\gameui.cpp(265): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
+c:\users\xavier\projects\c++\win32\chessv2\chessv2\gameui.cpp(264): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
+c:\users\xavier\projects\c++\win32\chessv2\chessv2\gameui.cpp(273): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
+c:\users\xavier\projects\c++\win32\chessv2\chessv2\gameui.cpp(272): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
+c:\users\xavier\projects\c++\win32\chessv2\chessv2\gameui.cpp(271): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
+c:\users\xavier\projects\c++\win32\chessv2\chessv2\gameui.cpp(270): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
+c:\users\xavier\projects\c++\win32\chessv2\chessv2\gameui.cpp(293): warning C4244: 'argument': conversion from 'short' to 'const unsigned char', possible loss of data
+c:\users\xavier\projects\c++\win32\chessv2\chessv2\gameui.cpp(520): warning C4244: 'argument': conversion from 'short' to 'const unsigned char', possible loss of data
+c:\users\xavier\projects\c++\win32\chessv2\chessv2\gameui.cpp(522): warning C4244: 'argument': conversion from 'short' to 'const unsigned char', possible loss of data
+c:\users\xavier\projects\c++\win32\chessv2\chessv2\gameui.cpp(553): warning C4244: 'argument': conversion from 'short' to 'const unsigned char', possible loss of data
+c:\users\xavier\projects\c++\win32\chessv2\chessv2\gameui.cpp(557): warning C4244: 'argument': conversion from 'short' to 'const unsigned char', possible loss of data
+c:\users\xavier\projects\c++\win32\chessv2\chessv2\gameui.cpp(605): warning C4244: 'argument': conversion from 'short' to 'const unsigned char', possible loss of data
+  Generating Code...
+  Compiling...
+  Main.cpp
+c:\users\xavier\projects\c++\win32\chessv2\libraries\headers\moves\factories\pawnmovefactory.h(34): warning C4114: same type qualifier used more than once
+c:\users\xavier\projects\c++\win32\chessv2\libraries\headers\moves\factories\pawnmovefactory.h(35): warning C4114: same type qualifier used more than once
+c:\users\xavier\projects\c++\win32\chessv2\libraries\headers\moves\factories\rookmovefactory.h(51): warning C4114: same type qualifier used more than once
+c:\users\xavier\projects\c++\win32\chessv2\libraries\headers\moves\factories\rookmovefactory.h(52): warning C4114: same type qualifier used more than once
+c:\users\xavier\projects\c++\win32\chessv2\libraries\headers\moves\factories\rookmovefactory.h(53): warning C4114: same type qualifier used more than once
+c:\users\xavier\projects\c++\win32\chessv2\libraries\headers\moves\factories\rookmovefactory.h(54): warning C4114: same type qualifier used more than once
+c:\users\xavier\projects\c++\win32\chessv2\libraries\headers\moves\factories\bishopmovefactory.h(51): warning C4114: same type qualifier used more than once
+c:\users\xavier\projects\c++\win32\chessv2\libraries\headers\moves\factories\bishopmovefactory.h(52): warning C4114: same type qualifier used more than once
+c:\users\xavier\projects\c++\win32\chessv2\libraries\headers\moves\factories\bishopmovefactory.h(53): warning C4114: same type qualifier used more than once
+c:\users\xavier\projects\c++\win32\chessv2\libraries\headers\moves\factories\bishopmovefactory.h(54): warning C4114: same type qualifier used more than once
+c:\users\xavier\projects\c++\win32\chessv2\libraries\headers\moves\factories\knightmovefactory.h(24): warning C4114: same type qualifier used more than once
+c:\users\xavier\projects\c++\win32\chessv2\libraries\headers\moves\factories\queenmovefactory.h(81): warning C4114: same type qualifier used more than once
+c:\users\xavier\projects\c++\win32\chessv2\libraries\headers\moves\factories\queenmovefactory.h(82): warning C4114: same type qualifier used more than once
+c:\users\xavier\projects\c++\win32\chessv2\libraries\headers\moves\factories\queenmovefactory.h(83): warning C4114: same type qualifier used more than once
+c:\users\xavier\projects\c++\win32\chessv2\libraries\headers\moves\factories\queenmovefactory.h(84): warning C4114: same type qualifier used more than once
+c:\users\xavier\projects\c++\win32\chessv2\libraries\headers\moves\factories\queenmovefactory.h(85): warning C4114: same type qualifier used more than once
+c:\users\xavier\projects\c++\win32\chessv2\libraries\headers\moves\factories\queenmovefactory.h(86): warning C4114: same type qualifier used more than once
+c:\users\xavier\projects\c++\win32\chessv2\libraries\headers\moves\factories\queenmovefactory.h(87): warning C4114: same type qualifier used more than once
+c:\users\xavier\projects\c++\win32\chessv2\libraries\headers\moves\factories\queenmovefactory.h(88): warning C4114: same type qualifier used more than once
+c:\users\xavier\projects\c++\win32\chessv2\libraries\headers\moves\factories\kingmovefactory.h(24): warning C4114: same type qualifier used more than once
+c:\users\xavier\projects\c++\win32\chessv2\libraries\headers\artificial\artificial.h(21): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+c:\users\xavier\projects\c++\win32\chessv2\libraries\headers\artificial\artificial.h(63): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+c:\users\xavier\projects\c++\win32\chessv2\chessv2\main.cpp(133): warning C4244: 'return': conversion from 'WPARAM' to 'int', possible loss of data
+  Generating Code...
+  ChessV2.vcxproj -> C:\Users\Xavier\Projects\C++\win32\ChessV2\x64\Debug\ChessV2.exe

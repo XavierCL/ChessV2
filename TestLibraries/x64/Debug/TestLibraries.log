@@ -1,0 +1,3 @@
+﻿  stdafx.cpp
+  TestPoint.cpp
+LINK : fatal error LNK1104: cannot open file 'C:\Users\Xavier\Projects\C++\win32\ChessV2\x64\Debug\Libraries.lib'

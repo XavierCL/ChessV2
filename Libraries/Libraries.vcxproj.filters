@@ -48,9 +48,6 @@
     <ClInclude Include="Headers\Game\GameSet.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Headers\Physics\FastMath.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Headers\Boards\BitBoard.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -129,6 +126,18 @@
     <ClInclude Include="Headers\Artificial\HeuristicSelectiveArtificial.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Headers\Artificial\BruteRecurseWithLegalsArtificial.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Headers\Moves\Factories\GenericMoveFactory.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Headers\utils\FixedUnorderedMap.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Headers\Physics\FastMath.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Sources\Game\GameSet.cpp">
@@ -159,6 +168,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Sources\Boards\CastleFlags.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Sources\Moves\Factories\MoveFactory.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

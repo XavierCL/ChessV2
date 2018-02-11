@@ -1,1 +1,8 @@
 .vs
+.log
+.lib
+.dll
+.iobj
+.ipdb
+.pdb
+.exp

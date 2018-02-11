@@ -1,31 +1,26 @@
 #pragma once
 
+#include "GenericMoveFactory.h"
 #include "BitBoardMoveConstants.h"
 
-class KingMoveFactory
+class KingMoveFactory: public GenericMoveFactory
 {
 public:
 	KingMoveFactory(const Board& currentBoard)
-		: _currentBoard(currentBoard)
+		: GenericMoveFactory(8, currentBoard)
 	{}
 
-	const std::vector<Move const *> getLegalMoves() const
+protected:
+	void generateLegalMoves() override
 	{
-		std::vector<Move const *> moves;
-		_currentBoard.bitBoards().foreachBoardBit(_currentBoard.isWhiteTurn(), PieceType::KING, [this, &moves](const unsigned char& position) {
-			std::vector<Move const *> localKills(BitBoardMoveConstants::getImmediateKills(
+		_currentBoard.bitBoards().foreachBoardBit(_currentBoard.isWhiteTurn(), PieceType::KING, [this](const unsigned char& position) {
+			append(BitBoardMoveConstants::getImmediateKills(
 				_currentBoard.isWhiteTurn(),
 				position,
 				_currentBoard.bitBoards(),
 				BitBoardRayConstants::KING_IMMEDIATE_KILL,
 				BitBoardMoveConstants::KING_IMMEDIATE_KILL_DATA
 			));
-			moves.reserve(localKills.size());
-			std::copy_if(localKills.begin(), localKills.end(), std::back_inserter(moves), [this](const Move const * move) {return !move->wouldKingBeChecked(_currentBoard); });
 		});
-		return moves;
 	}
-
-private:
-	const Board _currentBoard;
 };

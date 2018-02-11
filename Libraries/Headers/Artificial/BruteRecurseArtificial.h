@@ -33,7 +33,7 @@ public:
 						bestMoves.clear();
 						bestMoves.push_back(gameSet.getLegals()[i]);
 					}
-					else if (maxScore == currentScore)
+					else if (maxScore <= currentScore + ACCEPTED_RATIO)
 					{
 						bestMoves.push_back(gameSet.getLegals()[i]);
 					}
@@ -51,7 +51,7 @@ public:
 						bestMoves.clear();
 						bestMoves.push_back(gameSet.getLegals()[i]);
 					}
-					else if (minScore == currentScore)
+					else if (minScore >= currentScore + ACCEPTED_RATIO)
 					{
 						bestMoves.push_back(gameSet.getLegals()[i]);
 					}
@@ -62,6 +62,9 @@ public:
 		}
 	}
 private:
+	const double AVERAGE_RATIO = 0.00001;
+	const double ACCEPTED_RATIO = 0.000001;
+
 	const unsigned char _depth;
 	std::minstd_rand0* const _generator;
 
@@ -83,7 +86,7 @@ private:
 				double maxScore = revaluate(gameSet.playMove(*gameSet.getLegals()[0]), depth - 1, -1000);
 				average += maxScore;
 				size_t i = 1;
-				for (; i < gameSet.getLegals().size() && lastBound >(maxScore + (average / i) * 0.01) / 1.01; ++i)
+				for (; i < gameSet.getLegals().size() && lastBound >(maxScore + (average / i) * AVERAGE_RATIO) / (1 + AVERAGE_RATIO); ++i)
 				{
 					double currentScore = revaluate(gameSet.playMove(*gameSet.getLegals()[i]), depth - 1, maxScore);
 					average += currentScore;
@@ -92,14 +95,14 @@ private:
 						maxScore = currentScore;
 					}
 				}
-				return (maxScore + (average / i) * 0.01) / 1.01;
+				return (maxScore + (average / i) * AVERAGE_RATIO) / (1 + AVERAGE_RATIO);
 			}
 			else
 			{
 				double minScore = revaluate(gameSet.playMove(*gameSet.getLegals()[0]), depth - 1, 1000);
 				average += minScore;
 				size_t i = 1;
-				for (; i < gameSet.getLegals().size() && lastBound < (minScore + (average / i) * 0.01) / 1.01; ++i)
+				for (; i < gameSet.getLegals().size() && lastBound < (minScore + (average / i) * AVERAGE_RATIO) / (1 + AVERAGE_RATIO); ++i)
 				{
 					double currentScore = revaluate(gameSet.playMove(*gameSet.getLegals()[i]), depth - 1, minScore);
 					average += currentScore;
@@ -108,7 +111,7 @@ private:
 						minScore = currentScore;
 					}
 				}
-				return (minScore + (average / i) * 0.01) / 1.01;
+				return (minScore + (average / i) * AVERAGE_RATIO) / (1 + AVERAGE_RATIO);
 			}
 		}
 	}

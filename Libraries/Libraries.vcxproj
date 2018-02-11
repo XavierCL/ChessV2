@@ -137,6 +137,7 @@
   <ItemGroup>
     <ClInclude Include="Headers\Artificial\Artificial.h" />
     <ClInclude Include="Headers\Artificial\BruteRecurseArtificial.h" />
+    <ClInclude Include="Headers\Artificial\BruteRecurseWithLegalsArtificial.h" />
     <ClInclude Include="Headers\Artificial\HeuristicSelectiveArtificial.h" />
     <ClInclude Include="Headers\Boards\BitBoardRayConstants.h" />
     <ClInclude Include="Headers\Boards\BoardHash.h" />
@@ -154,6 +155,7 @@
     <ClInclude Include="Headers\Moves\Factories\BishopMoveFactory.h" />
     <ClInclude Include="Headers\Moves\Factories\BitBoardMoveConstants.h" />
     <ClInclude Include="Headers\Moves\Factories\CastleMoveFactory.h" />
+    <ClInclude Include="Headers\Moves\Factories\GenericMoveFactory.h" />
     <ClInclude Include="Headers\Moves\Factories\KingMoveFactory.h" />
     <ClInclude Include="Headers\Moves\Factories\KnightMoveFactory.h" />
     <ClInclude Include="Headers\Moves\Factories\MoveFactory.h" />
@@ -166,6 +168,7 @@
     <ClInclude Include="Headers\Physics\Point.h" />
     <ClInclude Include="Headers\Pieces\Piece.h" />
     <ClInclude Include="Headers\Moves\Effectors\Move.h" />
+    <ClInclude Include="Headers\utils\FixedUnorderedMap.h" />
     <ClInclude Include="Headers\utils\Hash.hpp" />
     <ClInclude Include="Headers\utils\Map.hpp" />
     <ClInclude Include="Headers\utils\Option.hpp" />
@@ -186,6 +189,7 @@
     <ClCompile Include="Sources\Moves\Effectors\SimpleMove.cpp" />
     <ClCompile Include="Sources\Moves\Effectors\PromotionMove.cpp" />
     <ClCompile Include="Sources\Moves\Factories\BitBoardMoveConstants.cpp" />
+    <ClCompile Include="Sources\Moves\Factories\MoveFactory.cpp" />
     <ClCompile Include="Sources\Physics\FastMath.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

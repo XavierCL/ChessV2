@@ -31,18 +31,18 @@ public:
 
 	const size_t hash() const
 	{
-		return _bitBoardHash(_bitBoards[0][0]) * 3
-			+ _bitBoardHash(_bitBoards[1][0]) * 5
-			+ _bitBoardHash(_bitBoards[2][0]) * 7
-			+ _bitBoardHash(_bitBoards[3][0]) * 11
-			+ _bitBoardHash(_bitBoards[4][0]) * 13
-			+ _bitBoardHash(_bitBoards[5][0]) * 17
-			+ _bitBoardHash(_bitBoards[0][0]) * 19
-			+ _bitBoardHash(_bitBoards[1][1]) * 23
-			+ _bitBoardHash(_bitBoards[2][1]) * 29
-			+ _bitBoardHash(_bitBoards[3][1]) * 31
-			+ _bitBoardHash(_bitBoards[4][1]) * 37
-			+ _bitBoardHash(_bitBoards[5][1]) * 41;
+		return _bitBoardHash(_bitBoards[0][0] * 3
+			+ _bitBoards[1][0] * 5
+			+ _bitBoards[2][0] * 7
+			+ _bitBoards[3][0] * 11
+			+ _bitBoards[4][0] * 13
+			+ _bitBoards[5][0] * 17
+			+ _bitBoards[0][0] * 19
+			+ _bitBoards[1][1] * 23
+			+ _bitBoards[2][1] * 29
+			+ _bitBoards[3][1] * 31
+			+ _bitBoards[4][1] * 37
+			+ _bitBoards[5][1] * 41);
 	}
 
 	const bool equalsSinglePieceType(const PieceType& pieceType, const BitBoards& bitBoards) const

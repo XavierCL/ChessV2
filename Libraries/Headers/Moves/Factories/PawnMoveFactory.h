@@ -1,43 +1,37 @@
 #pragma once
 
+#include "GenericMoveFactory.h"
 #include "BitBoardMoveConstants.h"
 
-#include <algorithm>
-
-class PawnMoveFactory
+class PawnMoveFactory: public GenericMoveFactory
 {
 public:
 	PawnMoveFactory(const Board& currentBoard, const Option<Board>& lastBoard)
-		: _currentBoard(currentBoard),
+		: GenericMoveFactory(4 * currentBoard.bitBoards().populationCount(PieceType::PAWN, currentBoard.isWhiteTurn()), currentBoard),
 		_lastBoard(lastBoard)
 	{}
 
-	const std::vector<Move const *> getLegalMoves() const
+protected:
+	void generateLegalMoves() override
 	{
-		std::vector<Move const *> moves;
-		_currentBoard.bitBoards().foreachBoardBit(_currentBoard.isWhiteTurn(), PieceType::PAWN, [this, &moves](const unsigned char& position) {
-			const auto localMoves = BitBoardMoveConstants::getMoves(
+		_currentBoard.bitBoards().foreachBoardBit(_currentBoard.isWhiteTurn(), PieceType::PAWN, [this](const unsigned char& position) {
+			append(BitBoardMoveConstants::getMoves(
 				position,
 				_currentBoard.bitBoards(),
 				BitBoardRayConstants::PAWN_RAYS[_currentBoard.isWhiteTurn()],
 				BitBoardMoveConstants::PAWN_MOVES[_currentBoard.isWhiteTurn()],
 				_currentBoard.isWhiteTurn()
-			);
-			const auto localCaptures = BitBoardMoveConstants::getImmediateCaptures(
+			));
+			append(BitBoardMoveConstants::getImmediateCaptures(
 				_currentBoard.isWhiteTurn(),
 				position,
 				_currentBoard.bitBoards(),
 				BitBoardRayConstants::PAWN_IMMEDIATE_CAPTURES[_currentBoard.isWhiteTurn()],
 				BitBoardMoveConstants::PAWN_IMMEDIATE_CAPTURE_DATA[_currentBoard.isWhiteTurn()]
-			);
-			moves.reserve(localCaptures.size() + localMoves.size());
-			std::copy_if(localCaptures.begin(), localCaptures.end(), std::back_inserter(moves), [this](const Move const * move) {return !move->wouldKingBeChecked(_currentBoard); });
-			std::copy_if(localMoves.begin(), localMoves.end(), std::back_inserter(moves), [this](const Move const * move) {return !move->wouldKingBeChecked(_currentBoard); });
+			));
 		});
-		return moves;
 	}
 
 private:
-	const Board _currentBoard;
 	const Option<Board> _lastBoard;
 };

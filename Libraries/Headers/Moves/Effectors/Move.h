@@ -23,7 +23,7 @@ public:
 
 	const bool wouldKingBeChecked(const Board& board) const
 	{
-		return play(board).bitBoards().isKingChecked(board.isWhiteTurn());
+		return playPieces(board.bitBoards(), board.isWhiteTurn()).isKingChecked(board.isWhiteTurn());
 	}
 
 protected:

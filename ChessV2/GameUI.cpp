@@ -464,12 +464,24 @@ void GameUI::computerPlay()
 {
 	do
 	{
-		Move const * move = _artificial->getMove(*_gameSet);
-		GameSet* temp = new GameSet(_gameSet->playMove(*move));
-		delete _gameSet;
-		_gameSet = temp;
-		_isHdcUpToDate = false;
-		toggleGame(move);
+		if (_gameSet->isWhiteTurn())
+		{
+			Move const * move = BruteRecurseArtificial(5, _randomGenerator).getMove(*_gameSet);
+			GameSet* temp = new GameSet(_gameSet->playMove(*move));
+			delete _gameSet;
+			_gameSet = temp;
+			_isHdcUpToDate = false;
+			toggleGame(move);
+		}
+		else
+		{
+			Move const * move = _artificial->getMove(*_gameSet);
+			GameSet* temp = new GameSet(_gameSet->playMove(*move));
+			delete _gameSet;
+			_gameSet = temp;
+			_isHdcUpToDate = false;
+			toggleGame(move);
+		}
 	} while (_isComputerTurn && _isComputerOnly && !launchEndGame(false));
 	EnableWindow(_abortButton, false);
 	EnableWindow(_toMenuButton, true);

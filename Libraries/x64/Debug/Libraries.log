@@ -1,6 +1,0 @@
-﻿  GameSet.cpp
-  Generating Code...
-  Skipping... (no relevant changes detected)
-  MoveFactory.cpp
-GameSet.obj : warning LNK4221: This object file does not define any previously undefined public symbols, so it will not be used by any link operation that consumes this library
-  Libraries.vcxproj -> C:\Users\Xavier\Projects\C++\win32\ChessV2\x64\Debug\Libraries.lib

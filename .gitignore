@@ -17,3 +17,5 @@
 *.exp
 *.cache
 *.enc
+*.dll
+*.lib

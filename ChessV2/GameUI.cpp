@@ -508,7 +508,7 @@ void GameUI::playerTurn()
 		_pointsMouseCovered = NULL;
 	}
 	_pointsMouseCovered = new SimpleMove(0, 0, PieceType::EMPTY);
-	_legals = new vector<Move const *>(_gameSet->getLegals());
+	_legals = new vector<Move const *>(*_gameSet->getLegals());
 	_isMouseDown = false;
 	_isPlayerTurn = true;
 }

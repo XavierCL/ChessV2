@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../Physics/FastMath.h"
+#include "../utils/FastMath.hpp"
 
 class BitBoardRayConstants
 {
@@ -48,7 +48,7 @@ public:
 		char nextY = y + incY;
 		while (isInsideBoard(nextX, nextY))
 		{
-			ray |= positionToSingleBit(nextY * 8 + nextX + 1);
+			ray |= FastMath::positionToSingleBit(nextY * 8 + nextX + 1);
 			nextX = nextX + incX;
 			nextY = nextY + incY;
 		}
@@ -57,25 +57,25 @@ public:
 
 	static const bool isAtImmediateReach(const unsigned long long& attackPosition, const unsigned long long& enemies, const unsigned long long ray[65])
 	{
-		return ray[singleBitToPosition(attackPosition)] & enemies;
+		return ray[FastMath::singleBitToPosition(attackPosition)] & enemies;
 	}
 
 	static const bool isAtReach(const unsigned long long& attackPosition, const unsigned long long& enemies, const unsigned long long& allBlocking, const unsigned long long ray[65], const bool& isLeastDirection)
 	{
-		const unsigned long long attackRay = ray[singleBitToPosition(attackPosition)];
+		const unsigned long long attackRay = ray[FastMath::singleBitToPosition(attackPosition)];
 		const unsigned long long enemyRay = attackRay & enemies;
 		const unsigned long long allBlockingRay = attackRay & allBlocking;
 		if (isLeastDirection)
 		{
-			const unsigned long long blockingEnemy = isolateLeastSignificantBit(enemyRay);
-			const unsigned long long blockingPiece = isolateLeastSignificantBit(allBlockingRay);
+			const unsigned long long blockingEnemy = FastMath::isolateLeastSignificantBit(enemyRay);
+			const unsigned long long blockingPiece = FastMath::isolateLeastSignificantBit(allBlockingRay);
 			return (blockingEnemy | ((blockingEnemy == 0) * 0xc000000000000000))
 				<= (blockingPiece | ((blockingPiece == 0) * 0x9000000000000000));
 		}
 		else
 		{
-			const unsigned long long blockingEnemy = isolateMostSignificantBit(enemyRay);
-			const unsigned long long blockingPiece = isolateMostSignificantBit(allBlockingRay);
+			const unsigned long long blockingEnemy = FastMath::isolateMostSignificantBit(enemyRay);
+			const unsigned long long blockingPiece = FastMath::isolateMostSignificantBit(allBlockingRay);
 			return (blockingEnemy >= blockingPiece) && !(blockingEnemy == 0 && blockingPiece == 0);
 		}
 	}
@@ -86,18 +86,18 @@ private:
 	{
 		for (unsigned char position = 9; position <= 56; ++position)
 		{
-			PAWN_RAYS[1][position] = positionToSingleBit(position + 8);
+			PAWN_RAYS[1][position] = FastMath::positionToSingleBit(position + 8);
 			if ((position - 1) / 8 == 1)
 			{
-				PAWN_RAYS[1][position] |= positionToSingleBit(position + 16);
+				PAWN_RAYS[1][position] |= FastMath::positionToSingleBit(position + 16);
 			}
 		}
 		for (unsigned char position = 9; position <= 56; ++position)
 		{
-			PAWN_RAYS[0][position] = positionToSingleBit(position - 8);
+			PAWN_RAYS[0][position] = FastMath::positionToSingleBit(position - 8);
 			if ((position - 1) / 8 == 6)
 			{
-				PAWN_RAYS[0][position] |= positionToSingleBit(position - 16);
+				PAWN_RAYS[0][position] |= FastMath::positionToSingleBit(position - 16);
 			}
 		}
 	}
@@ -108,22 +108,22 @@ private:
 		{
 			if (position % 8 != 0)
 			{
-				PAWN_IMMEDIATE_CAPTURES[1][position] |= positionToSingleBit(position + 9);
+				PAWN_IMMEDIATE_CAPTURES[1][position] |= FastMath::positionToSingleBit(position + 9);
 			}
 			if (position % 8 != 1)
 			{
-				PAWN_IMMEDIATE_CAPTURES[1][position] |= positionToSingleBit(position + 7);
+				PAWN_IMMEDIATE_CAPTURES[1][position] |= FastMath::positionToSingleBit(position + 7);
 			}
 		}
 		for (unsigned char position = 9; position <= 64; ++position)
 		{
 			if (position % 8 != 0)
 			{
-				PAWN_IMMEDIATE_CAPTURES[0][position] |= positionToSingleBit(position - 7);
+				PAWN_IMMEDIATE_CAPTURES[0][position] |= FastMath::positionToSingleBit(position - 7);
 			}
 			if (position % 8 != 1)
 			{
-				PAWN_IMMEDIATE_CAPTURES[0][position] |= positionToSingleBit(position - 9);
+				PAWN_IMMEDIATE_CAPTURES[0][position] |= FastMath::positionToSingleBit(position - 9);
 			}
 		}
 	}
@@ -162,14 +162,14 @@ private:
 		{
 			for (char y = 0; y < 8; ++y)
 			{
-				if (isInsideBoard(x + 2, y + 1)) KNIGHT_IMMEDIATE_KILL[y * 8 + x + 1] |= positionToSingleBit((y + 1) * 8 + x + 3);
-				if (isInsideBoard(x + 2, y - 1)) KNIGHT_IMMEDIATE_KILL[y * 8 + x + 1] |= positionToSingleBit((y - 1) * 8 + x + 3);
-				if (isInsideBoard(x + 1, y - 2)) KNIGHT_IMMEDIATE_KILL[y * 8 + x + 1] |= positionToSingleBit((y - 2) * 8 + x + 2);
-				if (isInsideBoard(x - 1, y - 2)) KNIGHT_IMMEDIATE_KILL[y * 8 + x + 1] |= positionToSingleBit((y - 2) * 8 + x);
-				if (isInsideBoard(x - 2, y - 1)) KNIGHT_IMMEDIATE_KILL[y * 8 + x + 1] |= positionToSingleBit((y - 1) * 8 + x - 1);
-				if (isInsideBoard(x - 2, y + 1)) KNIGHT_IMMEDIATE_KILL[y * 8 + x + 1] |= positionToSingleBit((y + 1) * 8 + x - 1);
-				if (isInsideBoard(x - 1, y + 2)) KNIGHT_IMMEDIATE_KILL[y * 8 + x + 1] |= positionToSingleBit((y + 2) * 8 + x);
-				if (isInsideBoard(x + 1, y + 2)) KNIGHT_IMMEDIATE_KILL[y * 8 + x + 1] |= positionToSingleBit((y + 2) * 8 + x + 2);
+				if (isInsideBoard(x + 2, y + 1)) KNIGHT_IMMEDIATE_KILL[y * 8 + x + 1] |= FastMath::positionToSingleBit((y + 1) * 8 + x + 3);
+				if (isInsideBoard(x + 2, y - 1)) KNIGHT_IMMEDIATE_KILL[y * 8 + x + 1] |= FastMath::positionToSingleBit((y - 1) * 8 + x + 3);
+				if (isInsideBoard(x + 1, y - 2)) KNIGHT_IMMEDIATE_KILL[y * 8 + x + 1] |= FastMath::positionToSingleBit((y - 2) * 8 + x + 2);
+				if (isInsideBoard(x - 1, y - 2)) KNIGHT_IMMEDIATE_KILL[y * 8 + x + 1] |= FastMath::positionToSingleBit((y - 2) * 8 + x);
+				if (isInsideBoard(x - 2, y - 1)) KNIGHT_IMMEDIATE_KILL[y * 8 + x + 1] |= FastMath::positionToSingleBit((y - 1) * 8 + x - 1);
+				if (isInsideBoard(x - 2, y + 1)) KNIGHT_IMMEDIATE_KILL[y * 8 + x + 1] |= FastMath::positionToSingleBit((y + 1) * 8 + x - 1);
+				if (isInsideBoard(x - 1, y + 2)) KNIGHT_IMMEDIATE_KILL[y * 8 + x + 1] |= FastMath::positionToSingleBit((y + 2) * 8 + x);
+				if (isInsideBoard(x + 1, y + 2)) KNIGHT_IMMEDIATE_KILL[y * 8 + x + 1] |= FastMath::positionToSingleBit((y + 2) * 8 + x + 2);
 			}
 		}
 	}
@@ -180,14 +180,14 @@ private:
 		{
 			for (char y = 0; y < 8; ++y)
 			{
-				if (isInsideBoard(x + 1, y + 1)) KING_IMMEDIATE_KILL[y * 8 + x + 1] |= positionToSingleBit((y + 1) * 8 + x + 2);
-				if (isInsideBoard(x + 1, y)) KING_IMMEDIATE_KILL[y * 8 + x + 1] |= positionToSingleBit((y) * 8 + x + 2);
-				if (isInsideBoard(x + 1, y - 1)) KING_IMMEDIATE_KILL[y * 8 + x + 1] |= positionToSingleBit((y - 1) * 8 + x + 2);
-				if (isInsideBoard(x, y - 1)) KING_IMMEDIATE_KILL[y * 8 + x + 1] |= positionToSingleBit((y - 1) * 8 + x + 1);
-				if (isInsideBoard(x - 1, y - 1)) KING_IMMEDIATE_KILL[y * 8 + x + 1] |= positionToSingleBit((y - 1) * 8 + x);
-				if (isInsideBoard(x - 1, y)) KING_IMMEDIATE_KILL[y * 8 + x + 1] |= positionToSingleBit((y) * 8 + x);
-				if (isInsideBoard(x - 1, y + 1)) KING_IMMEDIATE_KILL[y * 8 + x + 1] |= positionToSingleBit((y + 1) * 8 + x);
-				if (isInsideBoard(x, y + 1)) KING_IMMEDIATE_KILL[y * 8 + x + 1] |= positionToSingleBit((y + 1) * 8 + x + 1);
+				if (isInsideBoard(x + 1, y + 1)) KING_IMMEDIATE_KILL[y * 8 + x + 1] |= FastMath::positionToSingleBit((y + 1) * 8 + x + 2);
+				if (isInsideBoard(x + 1, y)) KING_IMMEDIATE_KILL[y * 8 + x + 1] |= FastMath::positionToSingleBit((y) * 8 + x + 2);
+				if (isInsideBoard(x + 1, y - 1)) KING_IMMEDIATE_KILL[y * 8 + x + 1] |= FastMath::positionToSingleBit((y - 1) * 8 + x + 2);
+				if (isInsideBoard(x, y - 1)) KING_IMMEDIATE_KILL[y * 8 + x + 1] |= FastMath::positionToSingleBit((y - 1) * 8 + x + 1);
+				if (isInsideBoard(x - 1, y - 1)) KING_IMMEDIATE_KILL[y * 8 + x + 1] |= FastMath::positionToSingleBit((y - 1) * 8 + x);
+				if (isInsideBoard(x - 1, y)) KING_IMMEDIATE_KILL[y * 8 + x + 1] |= FastMath::positionToSingleBit((y) * 8 + x);
+				if (isInsideBoard(x - 1, y + 1)) KING_IMMEDIATE_KILL[y * 8 + x + 1] |= FastMath::positionToSingleBit((y + 1) * 8 + x);
+				if (isInsideBoard(x, y + 1)) KING_IMMEDIATE_KILL[y * 8 + x + 1] |= FastMath::positionToSingleBit((y + 1) * 8 + x + 1);
 			}
 		}
 	}

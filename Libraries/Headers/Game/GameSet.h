@@ -49,7 +49,7 @@ public:
 		);
 	}
 
-	const std::vector<Move const *> getLegals() const
+	const std::shared_ptr<std::vector<Move const *>> getLegals() const
 	{
 		return _legalMoves;
 	}
@@ -111,7 +111,7 @@ private:
 		}
 	}
 
-	const std::vector<Move const *> generateLegalMoves() const
+	const std::shared_ptr<std::vector<Move const *>> generateLegalMoves() const
 	{
 		if (_gameStatusNoMatterLegalMoves == Option<GameStatus>(GameStatus::LIVE) || _gameStatusNoMatterLegalMoves == Option<GameStatus>())
 		{
@@ -122,14 +122,14 @@ private:
 		}
 		else
 		{
-			return std::vector<Move const *>();
+			return std::make_shared<std::vector<Move const *>>();
 		}
 	}
 
 	const GameStatus generateGameStatus() const
 	{
 		return _gameStatusNoMatterLegalMoves.getOrElse([this]() {
-			if (_currentBoard.bitBoards().isKingChecked(_currentBoard.isWhiteTurn()) && _legalMoves.empty())
+			if (_currentBoard.bitBoards().isKingChecked(_currentBoard.isWhiteTurn()) && _legalMoves->empty())
 			{
 				if (_currentBoard.isWhiteTurn())
 				{
@@ -140,7 +140,7 @@ private:
 					return GameStatus::WHITE_WIN;
 				}
 			}
-			else if (_legalMoves.empty())
+			else if (_legalMoves->empty())
 			{
 				return GameStatus::NO_LEGAL_MOVE;
 			}
@@ -156,7 +156,7 @@ private:
 	const std::unordered_map<Board, unsigned char, BoardHash> _history;
 	const unsigned char _remainingNonCapturingCount;
 	const Option<GameStatus> _gameStatusNoMatterLegalMoves;
-	const std::vector<Move const *> _legalMoves;
+	const std::shared_ptr<std::vector<Move const *>> _legalMoves;
 	const GameStatus _gameStatus;
 };
 

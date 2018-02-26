@@ -37,7 +37,7 @@ public:
 			+ _bitBoards[3][0] * 11
 			+ _bitBoards[4][0] * 13
 			+ _bitBoards[5][0] * 17
-			+ _bitBoards[0][0] * 19
+			+ _bitBoards[0][1] * 19
 			+ _bitBoards[1][1] * 23
 			+ _bitBoards[2][1] * 29
 			+ _bitBoards[3][1] * 31
@@ -55,8 +55,8 @@ public:
 
 	const unsigned char pieceCountEquals(const BitBoards& bitBoards) const
 	{
-		return bitBoardPopulationCount(_bitBoards[6][0] | _bitBoards[6][1])
-			== bitBoardPopulationCount(bitBoards._bitBoards[6][0] | bitBoards._bitBoards[6][1]);
+		return FastMath::bitBoardPopulationCount(_bitBoards[6][0] | _bitBoards[6][1])
+			== FastMath::bitBoardPopulationCount(bitBoards._bitBoards[6][0] | bitBoards._bitBoards[6][1]);
 	}
 
 	const BitBoards movePiece(const unsigned long long& origin, const unsigned long long& destination, const PieceType& pieceType, const bool& isWhiteTurn) const
@@ -110,7 +110,7 @@ public:
 		BitBoards newBitBoard(*this);
 		const unsigned long long rookOrigin = (((destination < origin) * KING_SIDE_ROOK_INITIAL_POSITIONS) | ((destination > origin) * QUEEN_SIDE_ROOK_INITIAL_POSITIONS))
 			& ((isWhiteTurn * WHITE_ROOK_INITIAL_POSITIONS) | (!isWhiteTurn * BLACK_ROOK_INITIAL_POSITIONS));
-		const unsigned long long rookDestination = isolateLeastSignificantBit((origin | destination) << 1);
+		const unsigned long long rookDestination = FastMath::isolateLeastSignificantBit((origin | destination) << 1);
 		const unsigned long long bothKingPositions = origin | destination;
 		const unsigned long long bothRookPositions = rookOrigin | rookDestination;
 		const unsigned long long allPositions = bothKingPositions | bothRookPositions;
@@ -124,7 +124,7 @@ public:
 	void foreachBoardBit(const bool& isWhite, const PieceType& pieceType, const _FunctionType& foreachFunction) const
 	{
 		unsigned long long actualBitBoard = _bitBoards[pieceTypeToBoardIndex(pieceType)][isWhite];
-		foreachBit(actualBitBoard, foreachFunction);
+		FastMath::foreachBit(actualBitBoard, foreachFunction);
 	}
 
 	const unsigned long long& allPieces(const bool& isWhite) const
@@ -170,13 +170,13 @@ public:
 
 	const unsigned char populationCount(const PieceType& pieceType, const bool& isWhite) const
 	{
-		return bitBoardPopulationCount(_bitBoards[pieceTypeToBoardIndex(pieceType)][isWhite]);
+		return FastMath::bitBoardPopulationCount(_bitBoards[pieceTypeToBoardIndex(pieceType)][isWhite]);
 	}
 
 	const Piece getPiece(const unsigned char& x, const unsigned char& y) const
 	{
 		const unsigned char position(y * 8 + x + 1);
-		const unsigned long long singleBitBoard = positionToSingleBit(position);
+		const unsigned long long singleBitBoard = FastMath::positionToSingleBit(position);
 		if (singleBitBoard & _bitBoards[PAWN_INDEX][0])
 		{
 			return Piece(position, false, PieceType::PAWN);

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "FastMath.h"
+#include "../utils/FastMath.hpp"
 
 class Point
 {
@@ -12,8 +12,8 @@ public:
 	{}
 
 	Point(const unsigned long long& n)
-		: _x((singleBitToPosition(n) - 1) % 8),
-		_y((singleBitToPosition(n) - 1) / 8)
+		: _x((FastMath::singleBitToPosition(n) - 1) % 8),
+		_y((FastMath::singleBitToPosition(n) - 1) / 8)
 	{}
 
 	Point(const unsigned char& x, const unsigned char& y)
@@ -50,7 +50,7 @@ public:
 
 	const unsigned long long singleBitBoard() const
 	{
-		return positionToSingleBit(_x + _y * 8 + 1);
+		return FastMath::positionToSingleBit(_x + _y * 8 + 1);
 	}
 private:
 	unsigned char _x;

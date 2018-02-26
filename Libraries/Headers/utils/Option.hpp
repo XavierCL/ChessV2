@@ -19,15 +19,22 @@ public:
 	{}
 
 	Option(const Option<_Type>& copy)
-		: _inner(copy.isDefined() ? new _Type(*copy._inner) : nullptr)
+		: _inner(swap(copy))
 	{}
 
 	~Option()
 	{
-		if (isDefined())
+		remove();
+	}
+
+	Option<_Type>& operator=(const Option<_Type>& other)
+	{
+		if (&other != this)
 		{
-			delete _inner;
+			remove();
+			_inner = swap(other);
 		}
+		return *this;
 	}
 
 	const bool isDefined() const
@@ -122,7 +129,18 @@ public:
 	}
 
 private:
-	Option<_Type>& operator=(const Option<_Type>& other) = delete;
+	void remove()
+	{
+		if (isDefined())
+		{
+			delete _inner;
+		}
+	}
+
+	const _Type* swap(const Option<_Type>& other)
+	{
+		return other.isDefined() ? new _Type(*other._inner) : nullptr;
+	}
 
 	const _Type* _inner;
 };

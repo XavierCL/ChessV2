@@ -10,7 +10,9 @@
 #include "KingMoveFactory.h"
 #include "CastleMoveFactory.h"
 
-#include <unordered_map>
+#include "../../utils/FixedUnorderedMap.hpp"
+
+#include <memory>
 
 class MoveFactory
 {
@@ -20,40 +22,27 @@ public:
 		_lastBoard(lastBoard)
 	{}
 
-	const std::vector<Move const *> getLegalMoves() const
+	const std::shared_ptr<std::vector<Move const *>> getLegalMoves() const
 	{
-		const auto alreadyComputedLegals = _legalMap.find(_currentBoard);
-		if (alreadyComputedLegals != _endOfLegalMap)
-		{
-			return alreadyComputedLegals->second;
-		}
-		else
-		{
-			std::vector<Move const *> legalMoves;
-			
-			append(legalMoves, PawnMoveFactory(_currentBoard, _lastBoard).getLegalMoves());
-			append(legalMoves, KnightMoveFactory(_currentBoard).getLegalMoves());
-			append(legalMoves, BishopMoveFactory(_currentBoard).getLegalMoves());
-			append(legalMoves, RookMoveFactory(_currentBoard).getLegalMoves());
-			append(legalMoves, QueenMoveFactory(_currentBoard).getLegalMoves());
-			append(legalMoves, KingMoveFactory(_currentBoard).getLegalMoves());
-			append(legalMoves, CastleMoveFactory(_currentBoard).getLegalMoves());
+		//return _legalMap.get(_currentBoard).getOrElse([this]() {
+			std::shared_ptr<std::vector<Move const *>> legalMoves(std::make_shared<std::vector<Move const *>>());
 
-			_legalMap[_currentBoard] = legalMoves;
+			FastMath::pushAllPointer(legalMoves, PawnMoveFactory(_currentBoard, _lastBoard).getLegalMoves());
+			FastMath::pushAllPointer(legalMoves, KnightMoveFactory(_currentBoard).getLegalMoves());
+			FastMath::pushAllPointer(legalMoves, BishopMoveFactory(_currentBoard).getLegalMoves());
+			FastMath::pushAllPointer(legalMoves, RookMoveFactory(_currentBoard).getLegalMoves());
+			FastMath::pushAllPointer(legalMoves, QueenMoveFactory(_currentBoard).getLegalMoves());
+			FastMath::pushAllPointer(legalMoves, KingMoveFactory(_currentBoard).getLegalMoves());
+			FastMath::pushAllPointer(legalMoves, CastleMoveFactory(_currentBoard).getLegalMoves());
+
+			_legalMap.set(_currentBoard, legalMoves);
 
 			return legalMoves;
-		}
+		//});
 	}
 
 private:
-	static std::unordered_map<Board, std::vector<Move const *>, BoardHash> _legalMap;
-	static const std::unordered_map<Board, std::vector<Move const *>, BoardHash>::const_iterator _endOfLegalMap;
-
-	template <typename _VectorType>
-	static void append(std::vector<_VectorType>& a, const std::vector<_VectorType>& b)
-	{
-		a.insert(a.end(), b.cbegin(), b.cend());
-	}
+	static FixedUnorderedMap<Board, std::shared_ptr<std::vector<Move const *>>, BoardHash> _legalMap;
 
 	const Board _currentBoard;
 	const Option<Board> _lastBoard;

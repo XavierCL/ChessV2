@@ -26,7 +26,7 @@ protected:
 							BitBoards kingSecondMove = BitBoardMoveConstants::KING_IMMEDIATE_KILL_DATA[position - 1][position - 2]->playPieces(kingFirstMove, true);
 							if (!kingSecondMove.isKingChecked(true))
 							{
-								checklessAppend(BitBoardMoveConstants::CASTLES_MOVES[0]);
+								appendAny(BitBoardMoveConstants::CASTLES_MOVES[0]);
 							}
 						}
 					}
@@ -41,7 +41,7 @@ protected:
 							BitBoards kingSecondMove = BitBoardMoveConstants::KING_IMMEDIATE_KILL_DATA[position + 1][position + 2]->playPieces(kingFirstMove, true);
 							if (!kingSecondMove.isKingChecked(true))
 							{
-								checklessAppend(BitBoardMoveConstants::CASTLES_MOVES[1]);
+								appendAny(BitBoardMoveConstants::CASTLES_MOVES[1]);
 							}
 						}
 					}
@@ -61,7 +61,7 @@ protected:
 							BitBoards kingSecondMove = BitBoardMoveConstants::KING_IMMEDIATE_KILL_DATA[position - 1][position - 2]->playPieces(kingFirstMove, false);
 							if (!kingSecondMove.isKingChecked(false))
 							{
-								checklessAppend(BitBoardMoveConstants::CASTLES_MOVES[2]);
+								appendAny(BitBoardMoveConstants::CASTLES_MOVES[2]);
 							}
 						}
 					}
@@ -76,7 +76,7 @@ protected:
 							BitBoards kingSecondMove = BitBoardMoveConstants::KING_IMMEDIATE_KILL_DATA[position + 1][position + 2]->playPieces(kingFirstMove, false);
 							if (!kingSecondMove.isKingChecked(false))
 							{
-								checklessAppend(BitBoardMoveConstants::CASTLES_MOVES[3]);
+								appendAny(BitBoardMoveConstants::CASTLES_MOVES[3]);
 							}
 						}
 					}

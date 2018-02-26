@@ -15,45 +15,45 @@ public:
 	{
 		if (_depth == 0)
 		{
-			std::uniform_int_distribution<int> aDistributor(0, gameSet.getLegals().size() - 1);
-			return gameSet.getLegals()[aDistributor(*_generator)];
+			std::uniform_int_distribution<int> aDistributor(0, gameSet.getLegals()->size() - 1);
+			return (*gameSet.getLegals())[aDistributor(*_generator)];
 		}
 		else
 		{
-			std::vector<Move const *> bestMoves(1, gameSet.getLegals()[0]);
+			std::vector<Move const *> bestMoves(1, (*gameSet.getLegals())[0]);
 			if (gameSet.isWhiteTurn())
 			{
-				double maxScore = revaluate(gameSet.playMove(*gameSet.getLegals()[0]), _depth - 1, -1000);
-				for (size_t i = 1; i < gameSet.getLegals().size(); ++i)
+				double maxScore = revaluate(gameSet.playMove(*(*gameSet.getLegals())[0]), _depth - 1, -1000);
+				for (size_t i = 1; i < gameSet.getLegals()->size(); ++i)
 				{
-					double currentScore = revaluate(gameSet.playMove(*gameSet.getLegals()[i]), _depth - 1, maxScore);
+					double currentScore = revaluate(gameSet.playMove(*(*gameSet.getLegals())[i]), _depth - 1, maxScore);
 					if (maxScore < currentScore)
 					{
 						maxScore = currentScore;
 						bestMoves.clear();
-						bestMoves.push_back(gameSet.getLegals()[i]);
+						bestMoves.push_back((*gameSet.getLegals())[i]);
 					}
 					else if (maxScore <= currentScore + ACCEPTED_RATIO)
 					{
-						bestMoves.push_back(gameSet.getLegals()[i]);
+						bestMoves.push_back((*gameSet.getLegals())[i]);
 					}
 				}
 			}
 			else
 			{
-				double minScore = revaluate(gameSet.playMove(*gameSet.getLegals()[0]), _depth - 1, 1000);
-				for (size_t i = 1; i < gameSet.getLegals().size(); ++i)
+				double minScore = revaluate(gameSet.playMove(*(*gameSet.getLegals())[0]), _depth - 1, 1000);
+				for (size_t i = 1; i < gameSet.getLegals()->size(); ++i)
 				{
-					double currentScore = revaluate(gameSet.playMove(*gameSet.getLegals()[i]), _depth - 1, minScore);
+					double currentScore = revaluate(gameSet.playMove(*(*gameSet.getLegals())[i]), _depth - 1, minScore);
 					if (minScore > currentScore)
 					{
 						minScore = currentScore;
 						bestMoves.clear();
-						bestMoves.push_back(gameSet.getLegals()[i]);
+						bestMoves.push_back((*gameSet.getLegals())[i]);
 					}
 					else if (minScore >= currentScore + ACCEPTED_RATIO)
 					{
-						bestMoves.push_back(gameSet.getLegals()[i]);
+						bestMoves.push_back((*gameSet.getLegals())[i]);
 					}
 				}
 			}
@@ -83,12 +83,12 @@ private:
 			double average = 0;
 			if (gameSet.isWhiteTurn())
 			{
-				double maxScore = revaluate(gameSet.playMove(*gameSet.getLegals()[0]), depth - 1, -1000);
+				double maxScore = revaluate(gameSet.playMove(*(*gameSet.getLegals())[0]), depth - 1, -1000);
 				average += maxScore;
 				size_t i = 1;
-				for (; i < gameSet.getLegals().size() && lastBound >(maxScore + (average / i) * AVERAGE_RATIO) / (1 + AVERAGE_RATIO); ++i)
+				for (; i < gameSet.getLegals()->size() && lastBound >(maxScore + (average / i) * AVERAGE_RATIO) / (1 + AVERAGE_RATIO); ++i)
 				{
-					double currentScore = revaluate(gameSet.playMove(*gameSet.getLegals()[i]), depth - 1, maxScore);
+					double currentScore = revaluate(gameSet.playMove(*(*gameSet.getLegals())[i]), depth - 1, maxScore);
 					average += currentScore;
 					if (maxScore < currentScore)
 					{
@@ -99,12 +99,12 @@ private:
 			}
 			else
 			{
-				double minScore = revaluate(gameSet.playMove(*gameSet.getLegals()[0]), depth - 1, 1000);
+				double minScore = revaluate(gameSet.playMove(*(*gameSet.getLegals())[0]), depth - 1, 1000);
 				average += minScore;
 				size_t i = 1;
-				for (; i < gameSet.getLegals().size() && lastBound < (minScore + (average / i) * AVERAGE_RATIO) / (1 + AVERAGE_RATIO); ++i)
+				for (; i < gameSet.getLegals()->size() && lastBound < (minScore + (average / i) * AVERAGE_RATIO) / (1 + AVERAGE_RATIO); ++i)
 				{
-					double currentScore = revaluate(gameSet.playMove(*gameSet.getLegals()[i]), depth - 1, minScore);
+					double currentScore = revaluate(gameSet.playMove(*(*gameSet.getLegals())[i]), depth - 1, minScore);
 					average += currentScore;
 					if (minScore > currentScore)
 					{

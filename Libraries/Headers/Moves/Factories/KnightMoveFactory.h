@@ -14,7 +14,7 @@ protected:
 	void generateLegalMoves() override
 	{
 		_currentBoard.bitBoards().foreachBoardBit(_currentBoard.isWhiteTurn(), PieceType::KNIGHT, [this](const unsigned char& position) {
-			append(BitBoardMoveConstants::getImmediateKills(
+			pushAllCheckless(BitBoardMoveConstants::getImmediateKills(
 				_currentBoard.isWhiteTurn(),
 				position,
 				_currentBoard.bitBoards(),

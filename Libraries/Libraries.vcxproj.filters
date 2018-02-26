@@ -132,10 +132,10 @@
     <ClInclude Include="Headers\Moves\Factories\GenericMoveFactory.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Headers\utils\FixedUnorderedMap.h">
+    <ClInclude Include="Headers\utils\FastMath.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Headers\Physics\FastMath.h">
+    <ClInclude Include="Headers\utils\FixedUnorderedMap.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -147,9 +147,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Sources\Moves\Factories\BitBoardMoveConstants.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Sources\Physics\FastMath.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Sources\Boards\BitBoards.cpp">
@@ -171,6 +168,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Sources\Moves\Factories\MoveFactory.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Sources\utils\FastMath.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

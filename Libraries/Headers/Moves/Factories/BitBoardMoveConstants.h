@@ -10,6 +10,7 @@
 #include "../../Boards/BitBoardRayConstants.h"
 
 #include <vector>
+#include <memory>
 
 class BitBoardMoveConstants
 {
@@ -42,29 +43,29 @@ public:
 	//													s			s			s
 	// IMMEDIATE_KILL_DATA data are defined as such: [isWhite][bitPosition][bitDestination] -> Move
 
-	static std::vector<Move const *> PAWN_MOVES[2][65][65];
+	static std::shared_ptr<std::vector<Move const *>> PAWN_MOVES[2][65][65];
 	static Move const * PAWN_IMMEDIATE_CAPTURE_DATA[2][65][65];
 
-	static std::vector<Move const *> ROOK_UPWARD_CAPTURES[65][2][65];
-	static std::vector<Move const *> ROOK_DOWNWARD_CAPTURES[65][2][65];
-	static std::vector<Move const *> ROOK_LEFTWARD_CAPTURES[65][2][65];
-	static std::vector<Move const *> ROOK_RIGHTWARD_CAPTURES[65][2][65];
+	static std::shared_ptr<std::vector<Move const *>> ROOK_UPWARD_CAPTURES[65][2][65];
+	static std::shared_ptr<std::vector<Move const *>> ROOK_DOWNWARD_CAPTURES[65][2][65];
+	static std::shared_ptr<std::vector<Move const *>> ROOK_LEFTWARD_CAPTURES[65][2][65];
+	static std::shared_ptr<std::vector<Move const *>> ROOK_RIGHTWARD_CAPTURES[65][2][65];
 
-	static std::vector<Move const *> BISHOP_UP_LEFT_WARD_CAPTURES[65][2][65];
-	static std::vector<Move const *> BISHOP_UP_RIGHT_WARD_CAPTURES[65][2][65];
-	static std::vector<Move const *> BISHOP_DOWN_LEFT_WARD_CAPTURES[65][2][65];
-	static std::vector<Move const *> BISHOP_DOWN_RIGHT_WARD_CAPTURES[65][2][65];
+	static std::shared_ptr<std::vector<Move const *>> BISHOP_UP_LEFT_WARD_CAPTURES[65][2][65];
+	static std::shared_ptr<std::vector<Move const *>> BISHOP_UP_RIGHT_WARD_CAPTURES[65][2][65];
+	static std::shared_ptr<std::vector<Move const *>> BISHOP_DOWN_LEFT_WARD_CAPTURES[65][2][65];
+	static std::shared_ptr<std::vector<Move const *>> BISHOP_DOWN_RIGHT_WARD_CAPTURES[65][2][65];
 
 	static Move const * KNIGHT_IMMEDIATE_KILL_DATA[65][65];
 
-	static std::vector<Move const *> QUEEN_UPWARD_CAPTURES[65][2][65];
-	static std::vector<Move const *> QUEEN_DOWNWARD_CAPTURES[65][2][65];
-	static std::vector<Move const *> QUEEN_LEFTWARD_CAPTURES[65][2][65];
-	static std::vector<Move const *> QUEEN_RIGHTWARD_CAPTURES[65][2][65];
-	static std::vector<Move const *> QUEEN_UP_LEFT_WARD_CAPTURES[65][2][65];
-	static std::vector<Move const *> QUEEN_UP_RIGHT_WARD_CAPTURES[65][2][65];
-	static std::vector<Move const *> QUEEN_DOWN_LEFT_WARD_CAPTURES[65][2][65];
-	static std::vector<Move const *> QUEEN_DOWN_RIGHT_WARD_CAPTURES[65][2][65];
+	static std::shared_ptr<std::vector<Move const *>> QUEEN_UPWARD_CAPTURES[65][2][65];
+	static std::shared_ptr<std::vector<Move const *>> QUEEN_DOWNWARD_CAPTURES[65][2][65];
+	static std::shared_ptr<std::vector<Move const *>> QUEEN_LEFTWARD_CAPTURES[65][2][65];
+	static std::shared_ptr<std::vector<Move const *>> QUEEN_RIGHTWARD_CAPTURES[65][2][65];
+	static std::shared_ptr<std::vector<Move const *>> QUEEN_UP_LEFT_WARD_CAPTURES[65][2][65];
+	static std::shared_ptr<std::vector<Move const *>> QUEEN_UP_RIGHT_WARD_CAPTURES[65][2][65];
+	static std::shared_ptr<std::vector<Move const *>> QUEEN_DOWN_LEFT_WARD_CAPTURES[65][2][65];
+	static std::shared_ptr<std::vector<Move const *>> QUEEN_DOWN_RIGHT_WARD_CAPTURES[65][2][65];
 
 	static Move const * KING_IMMEDIATE_KILL_DATA[65][65];
 
@@ -73,6 +74,8 @@ public:
 	static void initialize()
 	{
 		BitBoardRayConstants::initialize();
+
+		initializeEmptyMoves();
 
 		initializePawnMoves();
 		initializePawnImmediateData();
@@ -97,7 +100,7 @@ public:
 			{
 				for (const auto moves : PAWN_MOVES[isWhite][position])
 				{
-					for (const auto move : moves)
+					for (const auto move : *moves)
 					{
 						delete move;
 					}
@@ -117,14 +120,14 @@ public:
 		// delete the rest some time
 	}
 
-	static std::vector<Move const *> getMoves(const unsigned char& position, const BitBoards& bitBoard, const unsigned long long rays[65], const std::vector<Move const *> moves[65][65], const bool direction)
+	static std::shared_ptr<std::vector<Move const *>> getMoves(const unsigned char& position, const BitBoards& bitBoard, const unsigned long long rays[65], const std::shared_ptr<std::vector<Move const *>> moves[65][65], const bool direction)
 	{
 		const unsigned long long collisionBitBoard = (bitBoard.allPieces(true) | bitBoard.allPieces(false)) & rays[position];
-		const unsigned char collisionPosition = direction ? positionOfLeastSignificantBit(collisionBitBoard) : positionOfMostSignificantBit(collisionBitBoard);
+		const unsigned char collisionPosition = direction ? FastMath::positionOfLeastSignificantBit(collisionBitBoard) : FastMath::positionOfMostSignificantBit(collisionBitBoard);
 		return moves[position][collisionPosition];
 	}
 
-	static std::vector<Move const *> getCaptures(const bool& isWhite, const unsigned char& position, const BitBoards& bitBoard, const unsigned long long rays[65], const std::vector<Move const *> captures[65][2][65], const bool direction)
+	static std::shared_ptr<std::vector<Move const *>> getCaptures(const bool& isWhite, const unsigned char& position, const BitBoards& bitBoard, const unsigned long long rays[65], const std::shared_ptr<std::vector<Move const *>> captures[65][2][65], const bool direction)
 	{
 		const unsigned long long sameColorCollisionBitBoard = bitBoard.allPieces(isWhite) & rays[position];
 		const unsigned long long otherColorCollisionBitBoard = bitBoard.allPieces(!isWhite) & rays[position];
@@ -132,57 +135,100 @@ public:
 		unsigned char collisionPosition;
 		if (direction)
 		{
-			const unsigned long long sameColorCollision = isolateLeastSignificantBit(sameColorCollisionBitBoard);
-			const unsigned long long otherColorCollision = isolateLeastSignificantBit(otherColorCollisionBitBoard);
+			const unsigned long long sameColorCollision = FastMath::isolateLeastSignificantBit(sameColorCollisionBitBoard);
+			const unsigned long long otherColorCollision = FastMath::isolateLeastSignificantBit(otherColorCollisionBitBoard);
 			isCollidingWithEnemy = (otherColorCollision < sameColorCollision
 				|| (sameColorCollision == 0 && otherColorCollision != 0))
 				&& !(otherColorCollision == 0 && sameColorCollision != 0);
-			collisionPosition = positionOfLeastSignificantBit(sameColorCollision | otherColorCollision);
+			collisionPosition = FastMath::positionOfLeastSignificantBit(sameColorCollision | otherColorCollision);
 		}
 		else
 		{
-			const unsigned long long sameColorCollision = isolateMostSignificantBit(sameColorCollisionBitBoard);
-			const unsigned long long otherColorCollision = isolateMostSignificantBit(otherColorCollisionBitBoard);
+			const unsigned long long sameColorCollision = FastMath::isolateMostSignificantBit(sameColorCollisionBitBoard);
+			const unsigned long long otherColorCollision = FastMath::isolateMostSignificantBit(otherColorCollisionBitBoard);
 			isCollidingWithEnemy = otherColorCollision > sameColorCollision;
-			collisionPosition = positionOfMostSignificantBit(sameColorCollision | otherColorCollision);
+			collisionPosition = FastMath::positionOfMostSignificantBit(sameColorCollision | otherColorCollision);
 		}
 		return captures[position][isCollidingWithEnemy][collisionPosition];
 	}
 
-	static std::vector<Move const *> getImmediateCaptures(const bool& isWhite, const unsigned char& position, const BitBoards& bitBoard, const unsigned long long immediateCaptures[65], Move const* const immediateData[65][65])
+	static std::shared_ptr<std::vector<Move const *>> getImmediateCaptures(const bool& isWhite, const unsigned char& position, const BitBoards& bitBoard, const unsigned long long immediateCaptures[65], Move const* const immediateData[65][65])
 	{
 		const unsigned long long collisionBitBoard = bitBoard.allPieces(!isWhite) & immediateCaptures[position];
-		std::vector<Move const *> moves;
-		moves.reserve(bitBoardPopulationCount(collisionBitBoard));
-		foreachBit(collisionBitBoard, [&moves, &position, &isWhite, &immediateData](const unsigned char& attackPosition) {
-			moves.push_back(immediateData[position][attackPosition]);
+		std::shared_ptr<std::vector<Move const *>> moves(std::make_shared<std::vector<Move const *>>());
+		moves->reserve(FastMath::bitBoardPopulationCount(collisionBitBoard));
+		FastMath::foreachBit(collisionBitBoard, [&moves, &position, &isWhite, &immediateData](const unsigned char& attackPosition) {
+			moves->push_back(immediateData[position][attackPosition]);
 		});
 		return moves;
 	}
 
-	static std::vector<Move const *> getImmediateKills(const bool& isWhite, const unsigned char& position, const BitBoards& bitBoard, const unsigned long long immediateKills[65], Move const* const immediateData[65][65])
+	static std::shared_ptr<std::vector<Move const *>> getImmediateKills(const bool& isWhite, const unsigned char& position, const BitBoards& bitBoard, const unsigned long long immediateKills[65], Move const* const immediateData[65][65])
 	{
 		const unsigned long long collisionBitBoard = (~bitBoard.allPieces(isWhite)) & immediateKills[position];
-		std::vector<Move const *> moves;
-		moves.reserve(bitBoardPopulationCount(collisionBitBoard));
-		foreachBit(collisionBitBoard, [&moves, &position, &isWhite, &immediateData](const unsigned char& attackPosition) {
-			moves.push_back(immediateData[position][attackPosition]);
+		std::shared_ptr<std::vector<Move const *>> moves(std::make_shared<std::vector<Move const *>>());
+		moves->reserve(FastMath::bitBoardPopulationCount(collisionBitBoard));
+		FastMath::foreachBit(collisionBitBoard, [&moves, &position, &isWhite, &immediateData](const unsigned char& attackPosition) {
+			moves->push_back(immediateData[position][attackPosition]);
 		});
 		return moves;
 	}
 
 private:
 
-	static const std::vector<Move const *> createCaptures(const char& x, const char& y, const char& incX, const char& incY, const unsigned char& stopPosition, const bool& captureLast, const PieceType& pieceType)
+	static void initializeEmptyMoves()
 	{
-		std::vector<Move const *> captures;
+		for (size_t w = 0; w < 2; ++w)
+		{
+			for (size_t p = 0; p < 65; ++p)
+			{
+				for (size_t d = 0; d < 65; ++d)
+				{
+					PAWN_MOVES[w][p][d] = std::make_shared<std::vector<Move const *>>();
+				}
+			}
+		}
+		for (size_t p = 0; p < 65; ++p)
+		{
+			for (size_t w = 0; w < 2; ++w)
+			{
+				for (size_t d = 0; d < 65; ++d)
+				{
+					ROOK_UPWARD_CAPTURES[p][w][d] = std::make_shared<std::vector<Move const *>>();
+					ROOK_DOWNWARD_CAPTURES[p][w][d] = std::make_shared<std::vector<Move const *>>();
+					ROOK_LEFTWARD_CAPTURES[p][w][d] = std::make_shared<std::vector<Move const *>>();
+					ROOK_RIGHTWARD_CAPTURES[p][w][d] = std::make_shared<std::vector<Move const *>>();
+
+					BISHOP_UP_LEFT_WARD_CAPTURES[p][w][d] = std::make_shared<std::vector<Move const *>>();
+					BISHOP_UP_RIGHT_WARD_CAPTURES[p][w][d] = std::make_shared<std::vector<Move const *>>();
+					BISHOP_DOWN_LEFT_WARD_CAPTURES[p][w][d] = std::make_shared<std::vector<Move const *>>();
+					BISHOP_DOWN_RIGHT_WARD_CAPTURES[p][w][d] = std::make_shared<std::vector<Move const *>>();
+
+					QUEEN_UPWARD_CAPTURES[p][w][d] = std::make_shared<std::vector<Move const *>>();
+					QUEEN_DOWNWARD_CAPTURES[p][w][d] = std::make_shared<std::vector<Move const *>>();
+					QUEEN_LEFTWARD_CAPTURES[p][w][d] = std::make_shared<std::vector<Move const *>>();
+					QUEEN_RIGHTWARD_CAPTURES[p][w][d] = std::make_shared<std::vector<Move const *>>();
+					QUEEN_UP_LEFT_WARD_CAPTURES[p][w][d] = std::make_shared<std::vector<Move const *>>();
+					QUEEN_UP_RIGHT_WARD_CAPTURES[p][w][d] = std::make_shared<std::vector<Move const *>>();
+					QUEEN_DOWN_LEFT_WARD_CAPTURES[p][w][d] = std::make_shared<std::vector<Move const *>>();
+					QUEEN_DOWN_RIGHT_WARD_CAPTURES[p][w][d] = std::make_shared<std::vector<Move const *>>();
+				}
+			}
+		}
+	}
+
+
+
+	static std::shared_ptr<std::vector<Move const *>> createCaptures(const char& x, const char& y, const char& incX, const char& incY, const unsigned char& stopPosition, const bool& captureLast, const PieceType& pieceType)
+	{
+		std::shared_ptr<std::vector<Move const *>> captures(std::make_shared<std::vector< Move const *>>());
 		char nextX = x + incX;
 		char nextY = y + incY;
 		while (BitBoardRayConstants::isInsideBoard(nextX, nextY) && nextY * 8 + nextX + 1 != stopPosition)
 		{
-			captures.push_back(new SimpleMove(
-				positionToSingleBit(y * 8 + x + 1),
-				positionToSingleBit(nextY * 8 + nextX + 1),
+			captures->push_back(new SimpleMove(
+				FastMath::positionToSingleBit(y * 8 + x + 1),
+				FastMath::positionToSingleBit(nextY * 8 + nextX + 1),
 				pieceType
 			));
 			nextX = nextX + incX;
@@ -190,9 +236,9 @@ private:
 		}
 		if (captureLast && BitBoardRayConstants::isInsideBoard(nextX, nextY) && nextY * 8 + nextX + 1 == stopPosition)
 		{
-			captures.push_back(new CaptureMove(
-				positionToSingleBit(y * 8 + x + 1),
-				positionToSingleBit(nextY * 8 + nextX + 1),
+			captures->push_back(new CaptureMove(
+				FastMath::positionToSingleBit(y * 8 + x + 1),
+				FastMath::positionToSingleBit(nextY * 8 + nextX + 1),
 				pieceType
 			));
 		}
@@ -203,73 +249,73 @@ private:
 	{
 		for (unsigned char position = 9; position <= 48; ++position)
 		{
-			PAWN_MOVES[1][position][0] = { new SimpleMove(
-					positionToSingleBit(position),
-					positionToSingleBit(position + 8),
+			PAWN_MOVES[1][position][0] = std::make_shared<std::vector<Move const *>>(std::vector<Move const *>({ new SimpleMove(
+					FastMath::positionToSingleBit(position),
+					FastMath::positionToSingleBit(position + 8),
 					PieceType::PAWN
-				) };
+				) }));
 			if ((position - 1) / 8 == 1)
 			{
-				PAWN_MOVES[1][position][0] = {
+				PAWN_MOVES[1][position][0] = std::make_shared<std::vector<Move const *>>(std::vector<Move const *>({
 					new SimpleMove(
-						positionToSingleBit(position),
-						positionToSingleBit(position + 8),
+						FastMath::positionToSingleBit(position),
+						FastMath::positionToSingleBit(position + 8),
 						PieceType::PAWN
 					), new SimpleMove(
-						positionToSingleBit(position),
-						positionToSingleBit(position + 16),
+						FastMath::positionToSingleBit(position),
+						FastMath::positionToSingleBit(position + 16),
 						PieceType::PAWN
-					) };
-				PAWN_MOVES[1][position][position + 16] = { new SimpleMove(
-					positionToSingleBit(position),
-					positionToSingleBit(position + 8),
+					) }));
+				PAWN_MOVES[1][position][position + 16] = std::make_shared<std::vector<Move const *>>(std::vector<Move const *>({ new SimpleMove(
+					FastMath::positionToSingleBit(position),
+					FastMath::positionToSingleBit(position + 8),
 					PieceType::PAWN
-				) };
+				) }));
 			}
 		}
 		for (unsigned char position = 17; position <= 56; ++position)
 		{
-			PAWN_MOVES[0][position][0] = { new SimpleMove(
-				positionToSingleBit(position),
-				positionToSingleBit(position - 8),
+			PAWN_MOVES[0][position][0] = std::make_shared<std::vector<Move const *>>(std::vector<Move const *>({ new SimpleMove(
+				FastMath::positionToSingleBit(position),
+				FastMath::positionToSingleBit(position - 8),
 				PieceType::PAWN
-			) };
+			) }));
 			if ((position - 1) / 8 == 6)
 			{
-				PAWN_MOVES[0][position][0] = {
+				PAWN_MOVES[0][position][0] = std::make_shared<std::vector<Move const *>>(std::vector<Move const *>({
 					new SimpleMove(
-						positionToSingleBit(position),
-						positionToSingleBit(position - 8),
+						FastMath::positionToSingleBit(position),
+						FastMath::positionToSingleBit(position - 8),
 						PieceType::PAWN
 					), new SimpleMove(
-					positionToSingleBit(position),
-					positionToSingleBit(position - 16),
+						FastMath::positionToSingleBit(position),
+						FastMath::positionToSingleBit(position - 16),
+						PieceType::PAWN
+				) }));
+				PAWN_MOVES[0][position][position - 16] = std::make_shared<std::vector<Move const *>>(std::vector<Move const *>({ new SimpleMove(
+					FastMath::positionToSingleBit(position),
+					FastMath::positionToSingleBit(position - 8),
 					PieceType::PAWN
-				) };
-				PAWN_MOVES[0][position][position - 16] = { new SimpleMove(
-					positionToSingleBit(position),
-					positionToSingleBit(position - 8),
-					PieceType::PAWN
-				) };
+				) }));
 			}
 		}
 		for (unsigned char position = 49; position <= 56; ++position)
 		{
-			PAWN_MOVES[1][position][0] = {
-				new PromotionMove(positionToSingleBit(position), positionToSingleBit(position + 8), PieceType::QUEEN),
-				new PromotionMove(positionToSingleBit(position), positionToSingleBit(position + 8), PieceType::ROOK),
-				new PromotionMove(positionToSingleBit(position), positionToSingleBit(position + 8), PieceType::BISHOP),
-				new PromotionMove(positionToSingleBit(position), positionToSingleBit(position + 8), PieceType::KNIGHT)
-			};
+			PAWN_MOVES[1][position][0] = std::make_shared<std::vector<Move const *>>(std::vector<Move const *>({
+				new PromotionMove(FastMath::positionToSingleBit(position), FastMath::positionToSingleBit(position + 8), PieceType::QUEEN),
+				new PromotionMove(FastMath::positionToSingleBit(position), FastMath::positionToSingleBit(position + 8), PieceType::ROOK),
+				new PromotionMove(FastMath::positionToSingleBit(position), FastMath::positionToSingleBit(position + 8), PieceType::BISHOP),
+				new PromotionMove(FastMath::positionToSingleBit(position), FastMath::positionToSingleBit(position + 8), PieceType::KNIGHT)
+				}));
 		}
 		for (unsigned char position = 9; position <= 16; ++position)
 		{
-			PAWN_MOVES[0][position][0] = {
-				new PromotionMove(positionToSingleBit(position), positionToSingleBit(position - 8), PieceType::QUEEN),
-				new PromotionMove(positionToSingleBit(position), positionToSingleBit(position - 8), PieceType::ROOK),
-				new PromotionMove(positionToSingleBit(position), positionToSingleBit(position - 8), PieceType::BISHOP),
-				new PromotionMove(positionToSingleBit(position), positionToSingleBit(position - 8), PieceType::KNIGHT)
-			};
+			PAWN_MOVES[0][position][0] = std::make_shared<std::vector<Move const *>>(std::vector<Move const *>({
+				new PromotionMove(FastMath::positionToSingleBit(position), FastMath::positionToSingleBit(position - 8), PieceType::QUEEN),
+				new PromotionMove(FastMath::positionToSingleBit(position), FastMath::positionToSingleBit(position - 8), PieceType::ROOK),
+				new PromotionMove(FastMath::positionToSingleBit(position), FastMath::positionToSingleBit(position - 8), PieceType::BISHOP),
+				new PromotionMove(FastMath::positionToSingleBit(position), FastMath::positionToSingleBit(position - 8), PieceType::KNIGHT)
+				}));
 		}
 	}
 
@@ -280,16 +326,16 @@ private:
 			if (position % 8 != 0)
 			{
 				PAWN_IMMEDIATE_CAPTURE_DATA[1][position][position + 9] = new CaptureMove(
-					positionToSingleBit(position),
-					positionToSingleBit(position + 9),
+					FastMath::positionToSingleBit(position),
+					FastMath::positionToSingleBit(position + 9),
 					PieceType::PAWN
 				);
 			}
 			if (position % 8 != 1)
 			{
 				PAWN_IMMEDIATE_CAPTURE_DATA[1][position][position + 7] = new CaptureMove(
-					positionToSingleBit(position),
-					positionToSingleBit(position + 7),
+					FastMath::positionToSingleBit(position),
+					FastMath::positionToSingleBit(position + 7),
 					PieceType::PAWN
 				);
 			}
@@ -299,16 +345,16 @@ private:
 			if (position % 8 != 0)
 			{
 				PAWN_IMMEDIATE_CAPTURE_DATA[0][position][position - 7] = new CaptureMove(
-					positionToSingleBit(position),
-					positionToSingleBit(position - 7),
+					FastMath::positionToSingleBit(position),
+					FastMath::positionToSingleBit(position - 7),
 					PieceType::PAWN
 				);
 			}
 			if (position % 8 != 1)
 			{
 				PAWN_IMMEDIATE_CAPTURE_DATA[0][position][position - 9] = new CaptureMove(
-					positionToSingleBit(position),
-					positionToSingleBit(position - 9),
+					FastMath::positionToSingleBit(position),
+					FastMath::positionToSingleBit(position - 9),
 					PieceType::PAWN
 				);
 			}
@@ -318,16 +364,16 @@ private:
 			if (position % 8 != 0)
 			{
 				PAWN_IMMEDIATE_CAPTURE_DATA[1][position][position + 9] = new CapturePromotionMove(
-					positionToSingleBit(position),
-					positionToSingleBit(position + 9),
+					FastMath::positionToSingleBit(position),
+					FastMath::positionToSingleBit(position + 9),
 					PieceType::QUEEN
 				);
 			}
 			if (position % 8 != 1)
 			{
 				PAWN_IMMEDIATE_CAPTURE_DATA[1][position][position + 7] = new CapturePromotionMove(
-					positionToSingleBit(position),
-					positionToSingleBit(position + 7),
+					FastMath::positionToSingleBit(position),
+					FastMath::positionToSingleBit(position + 7),
 					PieceType::QUEEN
 				);
 			}
@@ -337,16 +383,16 @@ private:
 			if (position % 8 != 0)
 			{
 				PAWN_IMMEDIATE_CAPTURE_DATA[0][position][position - 7] = new CapturePromotionMove(
-					positionToSingleBit(position),
-					positionToSingleBit(position - 7),
+					FastMath::positionToSingleBit(position),
+					FastMath::positionToSingleBit(position - 7),
 					PieceType::QUEEN
 				);
 			}
 			if (position % 8 != 1)
 			{
 				PAWN_IMMEDIATE_CAPTURE_DATA[0][position][position - 9] = new CapturePromotionMove(
-					positionToSingleBit(position),
-					positionToSingleBit(position - 9),
+					FastMath::positionToSingleBit(position),
+					FastMath::positionToSingleBit(position - 9),
 					PieceType::QUEEN
 				);
 			}
@@ -362,7 +408,7 @@ private:
 				ROOK_UPWARD_CAPTURES[y * 8 + x + 1][0][0] = BitBoardMoveConstants::createCaptures(
 					x, y, 0, 1, 0, false, PieceType::ROOK
 				);
-				foreachBit(BitBoardRayConstants::UPWARD_RAYS[y * 8 + x + 1], [&x, &y](const unsigned char& collisionPosition) {
+				FastMath::foreachBit(BitBoardRayConstants::UPWARD_RAYS[y * 8 + x + 1], [&x, &y](const unsigned char& collisionPosition) {
 					for (unsigned char capturesLast = 0; capturesLast < 2; ++capturesLast)
 					{
 						ROOK_UPWARD_CAPTURES[y * 8 + x + 1][capturesLast][collisionPosition] = BitBoardMoveConstants::createCaptures(
@@ -373,7 +419,7 @@ private:
 				ROOK_DOWNWARD_CAPTURES[y * 8 + x + 1][0][0] = BitBoardMoveConstants::createCaptures(
 					x, y, 0, -1, 0, false, PieceType::ROOK
 				);
-				foreachBit(BitBoardRayConstants::DOWNWARD_RAYS[y * 8 + x + 1], [&x, &y](const unsigned char& collisionPosition) {
+				FastMath::foreachBit(BitBoardRayConstants::DOWNWARD_RAYS[y * 8 + x + 1], [&x, &y](const unsigned char& collisionPosition) {
 					for (unsigned char capturesLast = 0; capturesLast < 2; ++capturesLast)
 					{
 						ROOK_DOWNWARD_CAPTURES[y * 8 + x + 1][capturesLast][collisionPosition] = BitBoardMoveConstants::createCaptures(
@@ -384,7 +430,7 @@ private:
 				ROOK_RIGHTWARD_CAPTURES[y * 8 + x + 1][0][0] = BitBoardMoveConstants::createCaptures(
 					x, y, -1, 0, 0, false, PieceType::ROOK
 				);
-				foreachBit(BitBoardRayConstants::RIGHTWARD_RAYS[y * 8 + x + 1], [&x, &y](const unsigned char& collisionPosition) {
+				FastMath::foreachBit(BitBoardRayConstants::RIGHTWARD_RAYS[y * 8 + x + 1], [&x, &y](const unsigned char& collisionPosition) {
 					for (unsigned char capturesLast = 0; capturesLast < 2; ++capturesLast)
 					{
 						ROOK_RIGHTWARD_CAPTURES[y * 8 + x + 1][capturesLast][collisionPosition] = BitBoardMoveConstants::createCaptures(
@@ -395,7 +441,7 @@ private:
 				ROOK_LEFTWARD_CAPTURES[y * 8 + x + 1][0][0] = BitBoardMoveConstants::createCaptures(
 					x, y, 1, 0, 0, false, PieceType::ROOK
 				);
-				foreachBit(BitBoardRayConstants::LEFTWARD_RAYS[y * 8 + x + 1], [&x, &y](const unsigned char& collisionPosition) {
+				FastMath::foreachBit(BitBoardRayConstants::LEFTWARD_RAYS[y * 8 + x + 1], [&x, &y](const unsigned char& collisionPosition) {
 					for (unsigned char capturesLast = 0; capturesLast < 2; ++capturesLast)
 					{
 						ROOK_LEFTWARD_CAPTURES[y * 8 + x + 1][capturesLast][collisionPosition] = BitBoardMoveConstants::createCaptures(
@@ -416,7 +462,7 @@ private:
 				BISHOP_UP_LEFT_WARD_CAPTURES[y * 8 + x + 1][0][0] = BitBoardMoveConstants::createCaptures(
 					x, y, 1, 1, 0, false, PieceType::BISHOP
 				);
-				foreachBit(BitBoardRayConstants::UP_LEFT_WARD_RAYS[y * 8 + x + 1], [&x, &y](const unsigned char& collisionPosition) {
+				FastMath::foreachBit(BitBoardRayConstants::UP_LEFT_WARD_RAYS[y * 8 + x + 1], [&x, &y](const unsigned char& collisionPosition) {
 					for (unsigned char capturesLast = 0; capturesLast < 2; ++capturesLast)
 					{
 						BISHOP_UP_LEFT_WARD_CAPTURES[y * 8 + x + 1][capturesLast][collisionPosition] = BitBoardMoveConstants::createCaptures(
@@ -427,7 +473,7 @@ private:
 				BISHOP_UP_RIGHT_WARD_CAPTURES[y * 8 + x + 1][0][0] = BitBoardMoveConstants::createCaptures(
 					x, y, -1, 1, 0, false, PieceType::BISHOP
 				);
-				foreachBit(BitBoardRayConstants::UP_RIGHT_WARD_RAYS[y * 8 + x + 1], [&x, &y](const unsigned char& collisionPosition) {
+				FastMath::foreachBit(BitBoardRayConstants::UP_RIGHT_WARD_RAYS[y * 8 + x + 1], [&x, &y](const unsigned char& collisionPosition) {
 					for (unsigned char capturesLast = 0; capturesLast < 2; ++capturesLast)
 					{
 						BISHOP_UP_RIGHT_WARD_CAPTURES[y * 8 + x + 1][capturesLast][collisionPosition] = BitBoardMoveConstants::createCaptures(
@@ -438,7 +484,7 @@ private:
 				BISHOP_DOWN_LEFT_WARD_CAPTURES[y * 8 + x + 1][0][0] = BitBoardMoveConstants::createCaptures(
 					x, y, 1, -1, 0, false, PieceType::BISHOP
 				);
-				foreachBit(BitBoardRayConstants::DOWN_LEFT_WARD_RAYS[y * 8 + x + 1], [&x, &y](const unsigned char& collisionPosition) {
+				FastMath::foreachBit(BitBoardRayConstants::DOWN_LEFT_WARD_RAYS[y * 8 + x + 1], [&x, &y](const unsigned char& collisionPosition) {
 					for (unsigned char capturesLast = 0; capturesLast < 2; ++capturesLast)
 					{
 						BISHOP_DOWN_LEFT_WARD_CAPTURES[y * 8 + x + 1][capturesLast][collisionPosition] = BitBoardMoveConstants::createCaptures(
@@ -449,7 +495,7 @@ private:
 				BISHOP_DOWN_RIGHT_WARD_CAPTURES[y * 8 + x + 1][0][0] = BitBoardMoveConstants::createCaptures(
 					x, y, -1, -1, 0, false, PieceType::BISHOP
 				);
-				foreachBit(BitBoardRayConstants::DOWN_RIGHT_WARD_RAYS[y * 8 + x + 1], [&x, &y](const unsigned char& collisionPosition) {
+				FastMath::foreachBit(BitBoardRayConstants::DOWN_RIGHT_WARD_RAYS[y * 8 + x + 1], [&x, &y](const unsigned char& collisionPosition) {
 					for (unsigned char capturesLast = 0; capturesLast < 2; ++capturesLast)
 					{
 						BISHOP_DOWN_RIGHT_WARD_CAPTURES[y * 8 + x + 1][capturesLast][collisionPosition] = BitBoardMoveConstants::createCaptures(
@@ -467,10 +513,10 @@ private:
 		{
 			for (char y = 0; y < 8; ++y)
 			{
-				foreachBit(BitBoardRayConstants::KNIGHT_IMMEDIATE_KILL[y * 8 + x + 1], [&x, &y](const unsigned char& attackPosition) {
+				FastMath::foreachBit(BitBoardRayConstants::KNIGHT_IMMEDIATE_KILL[y * 8 + x + 1], [&x, &y](const unsigned char& attackPosition) {
 					BitBoardMoveConstants::KNIGHT_IMMEDIATE_KILL_DATA[y * 8 + x + 1][attackPosition] = new KillMove(
-						positionToSingleBit(y * 8 + x + 1),
-						positionToSingleBit(attackPosition),
+						FastMath::positionToSingleBit(y * 8 + x + 1),
+						FastMath::positionToSingleBit(attackPosition),
 						PieceType::KNIGHT
 					);
 				});
@@ -487,7 +533,7 @@ private:
 				QUEEN_UP_LEFT_WARD_CAPTURES[y * 8 + x + 1][0][0] = BitBoardMoveConstants::createCaptures(
 					x, y, 1, 1, 0, false, PieceType::QUEEN
 				);
-				foreachBit(BitBoardRayConstants::UP_LEFT_WARD_RAYS[y * 8 + x + 1], [&x, &y](const unsigned char& collisionPosition) {
+				FastMath::foreachBit(BitBoardRayConstants::UP_LEFT_WARD_RAYS[y * 8 + x + 1], [&x, &y](const unsigned char& collisionPosition) {
 					for (unsigned char capturesLast = 0; capturesLast < 2; ++capturesLast)
 					{
 						QUEEN_UP_LEFT_WARD_CAPTURES[y * 8 + x + 1][capturesLast][collisionPosition] = BitBoardMoveConstants::createCaptures(
@@ -498,7 +544,7 @@ private:
 				QUEEN_UP_RIGHT_WARD_CAPTURES[y * 8 + x + 1][0][0] = BitBoardMoveConstants::createCaptures(
 					x, y, -1, 1, 0, false, PieceType::QUEEN
 				);
-				foreachBit(BitBoardRayConstants::UP_RIGHT_WARD_RAYS[y * 8 + x + 1], [&x, &y](const unsigned char& collisionPosition) {
+				FastMath::foreachBit(BitBoardRayConstants::UP_RIGHT_WARD_RAYS[y * 8 + x + 1], [&x, &y](const unsigned char& collisionPosition) {
 					for (unsigned char capturesLast = 0; capturesLast < 2; ++capturesLast)
 					{
 						QUEEN_UP_RIGHT_WARD_CAPTURES[y * 8 + x + 1][capturesLast][collisionPosition] = BitBoardMoveConstants::createCaptures(
@@ -509,7 +555,7 @@ private:
 				QUEEN_DOWN_LEFT_WARD_CAPTURES[y * 8 + x + 1][0][0] = BitBoardMoveConstants::createCaptures(
 					x, y, 1, -1, 0, false, PieceType::QUEEN
 				);
-				foreachBit(BitBoardRayConstants::DOWN_LEFT_WARD_RAYS[y * 8 + x + 1], [&x, &y](const unsigned char& collisionPosition) {
+				FastMath::foreachBit(BitBoardRayConstants::DOWN_LEFT_WARD_RAYS[y * 8 + x + 1], [&x, &y](const unsigned char& collisionPosition) {
 					for (unsigned char capturesLast = 0; capturesLast < 2; ++capturesLast)
 					{
 						QUEEN_DOWN_LEFT_WARD_CAPTURES[y * 8 + x + 1][capturesLast][collisionPosition] = BitBoardMoveConstants::createCaptures(
@@ -520,7 +566,7 @@ private:
 				QUEEN_DOWN_RIGHT_WARD_CAPTURES[y * 8 + x + 1][0][0] = BitBoardMoveConstants::createCaptures(
 					x, y, -1, -1, 0, false, PieceType::QUEEN
 				);
-				foreachBit(BitBoardRayConstants::DOWN_RIGHT_WARD_RAYS[y * 8 + x + 1], [&x, &y](const unsigned char& collisionPosition) {
+				FastMath::foreachBit(BitBoardRayConstants::DOWN_RIGHT_WARD_RAYS[y * 8 + x + 1], [&x, &y](const unsigned char& collisionPosition) {
 					for (unsigned char capturesLast = 0; capturesLast < 2; ++capturesLast)
 					{
 						QUEEN_DOWN_RIGHT_WARD_CAPTURES[y * 8 + x + 1][capturesLast][collisionPosition] = BitBoardMoveConstants::createCaptures(
@@ -531,7 +577,7 @@ private:
 				QUEEN_UPWARD_CAPTURES[y * 8 + x + 1][0][0] = BitBoardMoveConstants::createCaptures(
 					x, y, 0, 1, 0, false, PieceType::QUEEN
 				);
-				foreachBit(BitBoardRayConstants::UPWARD_RAYS[y * 8 + x + 1], [&x, &y](const unsigned char& collisionPosition) {
+				FastMath::foreachBit(BitBoardRayConstants::UPWARD_RAYS[y * 8 + x + 1], [&x, &y](const unsigned char& collisionPosition) {
 					for (unsigned char capturesLast = 0; capturesLast < 2; ++capturesLast)
 					{
 						QUEEN_UPWARD_CAPTURES[y * 8 + x + 1][capturesLast][collisionPosition] = BitBoardMoveConstants::createCaptures(
@@ -542,7 +588,7 @@ private:
 				QUEEN_DOWNWARD_CAPTURES[y * 8 + x + 1][0][0] = BitBoardMoveConstants::createCaptures(
 					x, y, 0, -1, 0, false, PieceType::QUEEN
 				);
-				foreachBit(BitBoardRayConstants::DOWNWARD_RAYS[y * 8 + x + 1], [&x, &y](const unsigned char& collisionPosition) {
+				FastMath::foreachBit(BitBoardRayConstants::DOWNWARD_RAYS[y * 8 + x + 1], [&x, &y](const unsigned char& collisionPosition) {
 					for (unsigned char capturesLast = 0; capturesLast < 2; ++capturesLast)
 					{
 						QUEEN_DOWNWARD_CAPTURES[y * 8 + x + 1][capturesLast][collisionPosition] = BitBoardMoveConstants::createCaptures(
@@ -553,7 +599,7 @@ private:
 				QUEEN_RIGHTWARD_CAPTURES[y * 8 + x + 1][0][0] = BitBoardMoveConstants::createCaptures(
 					x, y, -1, 0, 0, false, PieceType::QUEEN
 				);
-				foreachBit(BitBoardRayConstants::RIGHTWARD_RAYS[y * 8 + x + 1], [&x, &y](const unsigned char& collisionPosition) {
+				FastMath::foreachBit(BitBoardRayConstants::RIGHTWARD_RAYS[y * 8 + x + 1], [&x, &y](const unsigned char& collisionPosition) {
 					for (unsigned char capturesLast = 0; capturesLast < 2; ++capturesLast)
 					{
 						QUEEN_RIGHTWARD_CAPTURES[y * 8 + x + 1][capturesLast][collisionPosition] = BitBoardMoveConstants::createCaptures(
@@ -564,7 +610,7 @@ private:
 				QUEEN_LEFTWARD_CAPTURES[y * 8 + x + 1][0][0] = BitBoardMoveConstants::createCaptures(
 					x, y, 1, 0, 0, false, PieceType::QUEEN
 				);
-				foreachBit(BitBoardRayConstants::LEFTWARD_RAYS[y * 8 + x + 1], [&x, &y](const unsigned char& collisionPosition) {
+				FastMath::foreachBit(BitBoardRayConstants::LEFTWARD_RAYS[y * 8 + x + 1], [&x, &y](const unsigned char& collisionPosition) {
 					for (unsigned char capturesLast = 0; capturesLast < 2; ++capturesLast)
 					{
 						QUEEN_LEFTWARD_CAPTURES[y * 8 + x + 1][capturesLast][collisionPosition] = BitBoardMoveConstants::createCaptures(
@@ -582,10 +628,10 @@ private:
 		{
 			for (char y = 0; y < 8; ++y)
 			{
-				foreachBit(BitBoardRayConstants::KING_IMMEDIATE_KILL[y * 8 + x + 1], [&x, &y](const unsigned char& attackPosition) {
+				FastMath::foreachBit(BitBoardRayConstants::KING_IMMEDIATE_KILL[y * 8 + x + 1], [&x, &y](const unsigned char& attackPosition) {
 					BitBoardMoveConstants::KING_IMMEDIATE_KILL_DATA[y * 8 + x + 1][attackPosition] = new KillMove(
-						positionToSingleBit(y * 8 + x + 1),
-						positionToSingleBit(attackPosition),
+						FastMath::positionToSingleBit(y * 8 + x + 1),
+						FastMath::positionToSingleBit(attackPosition),
 						PieceType::KING
 					);
 				});

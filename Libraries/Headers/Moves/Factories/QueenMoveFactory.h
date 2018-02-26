@@ -14,7 +14,7 @@ protected:
 	void generateLegalMoves() override
 	{
 		_currentBoard.bitBoards().foreachBoardBit(_currentBoard.isWhiteTurn(), PieceType::QUEEN, [this](const unsigned char& position) {
-			append(BitBoardMoveConstants::getCaptures(
+			pushAllCheckless(BitBoardMoveConstants::getCaptures(
 				_currentBoard.isWhiteTurn(),
 				position,
 				_currentBoard.bitBoards(),
@@ -22,7 +22,7 @@ protected:
 				BitBoardMoveConstants::QUEEN_UP_LEFT_WARD_CAPTURES,
 				true
 			));
-			append(BitBoardMoveConstants::getCaptures(
+			pushAllCheckless(BitBoardMoveConstants::getCaptures(
 				_currentBoard.isWhiteTurn(),
 				position,
 				_currentBoard.bitBoards(),
@@ -30,7 +30,7 @@ protected:
 				BitBoardMoveConstants::QUEEN_UP_RIGHT_WARD_CAPTURES,
 				true
 			));
-			append(BitBoardMoveConstants::getCaptures(
+			pushAllCheckless(BitBoardMoveConstants::getCaptures(
 				_currentBoard.isWhiteTurn(),
 				position,
 				_currentBoard.bitBoards(),
@@ -38,7 +38,7 @@ protected:
 				BitBoardMoveConstants::QUEEN_DOWN_LEFT_WARD_CAPTURES,
 				false
 			));
-			append(BitBoardMoveConstants::getCaptures(
+			pushAllCheckless(BitBoardMoveConstants::getCaptures(
 				_currentBoard.isWhiteTurn(),
 				position,
 				_currentBoard.bitBoards(),
@@ -46,7 +46,7 @@ protected:
 				BitBoardMoveConstants::QUEEN_DOWN_RIGHT_WARD_CAPTURES,
 				false
 			));
-			append(BitBoardMoveConstants::getCaptures(
+			pushAllCheckless(BitBoardMoveConstants::getCaptures(
 				_currentBoard.isWhiteTurn(),
 				position,
 				_currentBoard.bitBoards(),
@@ -54,7 +54,7 @@ protected:
 				BitBoardMoveConstants::QUEEN_UPWARD_CAPTURES,
 				true
 			));
-			append(BitBoardMoveConstants::getCaptures(
+			pushAllCheckless(BitBoardMoveConstants::getCaptures(
 				_currentBoard.isWhiteTurn(),
 				position,
 				_currentBoard.bitBoards(),
@@ -62,7 +62,7 @@ protected:
 				BitBoardMoveConstants::QUEEN_DOWNWARD_CAPTURES,
 				false
 			));
-			append(BitBoardMoveConstants::getCaptures(
+			pushAllCheckless(BitBoardMoveConstants::getCaptures(
 				_currentBoard.isWhiteTurn(),
 				position,
 				_currentBoard.bitBoards(),
@@ -70,7 +70,7 @@ protected:
 				BitBoardMoveConstants::QUEEN_LEFTWARD_CAPTURES,
 				true
 			));
-			append(BitBoardMoveConstants::getCaptures(
+			pushAllCheckless(BitBoardMoveConstants::getCaptures(
 				_currentBoard.isWhiteTurn(),
 				position,
 				_currentBoard.bitBoards(),

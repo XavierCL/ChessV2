@@ -14,7 +14,7 @@ protected:
 	void generateLegalMoves() override
 	{
 		_currentBoard.bitBoards().foreachBoardBit(_currentBoard.isWhiteTurn(), PieceType::ROOK, [this](const unsigned char& position) {
-			append(BitBoardMoveConstants::getCaptures(
+			pushAllCheckless(BitBoardMoveConstants::getCaptures(
 				_currentBoard.isWhiteTurn(),
 				position,
 				_currentBoard.bitBoards(),
@@ -22,7 +22,7 @@ protected:
 				BitBoardMoveConstants::ROOK_UPWARD_CAPTURES,
 				true
 			));
-			append(BitBoardMoveConstants::getCaptures(
+			pushAllCheckless(BitBoardMoveConstants::getCaptures(
 				_currentBoard.isWhiteTurn(),
 				position,
 				_currentBoard.bitBoards(),
@@ -30,7 +30,7 @@ protected:
 				BitBoardMoveConstants::ROOK_DOWNWARD_CAPTURES,
 				false
 			));
-			append(BitBoardMoveConstants::getCaptures(
+			pushAllCheckless(BitBoardMoveConstants::getCaptures(
 				_currentBoard.isWhiteTurn(),
 				position,
 				_currentBoard.bitBoards(),
@@ -38,7 +38,7 @@ protected:
 				BitBoardMoveConstants::ROOK_LEFTWARD_CAPTURES,
 				true
 			));
-			append(BitBoardMoveConstants::getCaptures(
+			pushAllCheckless(BitBoardMoveConstants::getCaptures(
 				_currentBoard.isWhiteTurn(),
 				position,
 				_currentBoard.bitBoards(),

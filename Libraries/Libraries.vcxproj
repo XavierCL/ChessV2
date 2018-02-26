@@ -163,12 +163,12 @@
     <ClInclude Include="Headers\Moves\Factories\PawnMoveFactory.h" />
     <ClInclude Include="Headers\Moves\Factories\QueenMoveFactory.h" />
     <ClInclude Include="Headers\Moves\Factories\RookMoveFactory.h" />
-    <ClInclude Include="Headers\Physics\FastMath.h" />
     <ClInclude Include="Headers\Boards\CastleFlags.h" />
     <ClInclude Include="Headers\Physics\Point.h" />
     <ClInclude Include="Headers\Pieces\Piece.h" />
     <ClInclude Include="Headers\Moves\Effectors\Move.h" />
-    <ClInclude Include="Headers\utils\FixedUnorderedMap.h" />
+    <ClInclude Include="Headers\utils\FastMath.hpp" />
+    <ClInclude Include="Headers\utils\FixedUnorderedMap.hpp" />
     <ClInclude Include="Headers\utils\Hash.hpp" />
     <ClInclude Include="Headers\utils\Map.hpp" />
     <ClInclude Include="Headers\utils\Option.hpp" />
@@ -190,7 +190,7 @@
     <ClCompile Include="Sources\Moves\Effectors\PromotionMove.cpp" />
     <ClCompile Include="Sources\Moves\Factories\BitBoardMoveConstants.cpp" />
     <ClCompile Include="Sources\Moves\Factories\MoveFactory.cpp" />
-    <ClCompile Include="Sources\Physics\FastMath.cpp" />
+    <ClCompile Include="Sources\utils\FastMath.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

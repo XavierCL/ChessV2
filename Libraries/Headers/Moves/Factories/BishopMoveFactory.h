@@ -14,7 +14,7 @@ protected:
 	void generateLegalMoves() override
 	{
 		_currentBoard.bitBoards().foreachBoardBit(_currentBoard.isWhiteTurn(), PieceType::BISHOP, [this](const unsigned char& position) {
-			append(BitBoardMoveConstants::getCaptures(
+			pushAllCheckless(BitBoardMoveConstants::getCaptures(
 				_currentBoard.isWhiteTurn(),
 				position,
 				_currentBoard.bitBoards(),
@@ -22,7 +22,7 @@ protected:
 				BitBoardMoveConstants::BISHOP_UP_LEFT_WARD_CAPTURES,
 				true
 			));
-			append(BitBoardMoveConstants::getCaptures(
+			pushAllCheckless(BitBoardMoveConstants::getCaptures(
 				_currentBoard.isWhiteTurn(),
 				position,
 				_currentBoard.bitBoards(),
@@ -30,7 +30,7 @@ protected:
 				BitBoardMoveConstants::BISHOP_UP_RIGHT_WARD_CAPTURES,
 				true
 			));
-			append(BitBoardMoveConstants::getCaptures(
+			pushAllCheckless(BitBoardMoveConstants::getCaptures(
 				_currentBoard.isWhiteTurn(),
 				position,
 				_currentBoard.bitBoards(),
@@ -38,7 +38,7 @@ protected:
 				BitBoardMoveConstants::BISHOP_DOWN_LEFT_WARD_CAPTURES,
 				false
 			));
-			append(BitBoardMoveConstants::getCaptures(
+			pushAllCheckless(BitBoardMoveConstants::getCaptures(
 				_currentBoard.isWhiteTurn(),
 				position,
 				_currentBoard.bitBoards(),

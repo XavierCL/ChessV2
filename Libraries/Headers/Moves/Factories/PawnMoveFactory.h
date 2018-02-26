@@ -15,14 +15,14 @@ protected:
 	void generateLegalMoves() override
 	{
 		_currentBoard.bitBoards().foreachBoardBit(_currentBoard.isWhiteTurn(), PieceType::PAWN, [this](const unsigned char& position) {
-			append(BitBoardMoveConstants::getMoves(
+			pushAllCheckless(BitBoardMoveConstants::getMoves(
 				position,
 				_currentBoard.bitBoards(),
 				BitBoardRayConstants::PAWN_RAYS[_currentBoard.isWhiteTurn()],
 				BitBoardMoveConstants::PAWN_MOVES[_currentBoard.isWhiteTurn()],
 				_currentBoard.isWhiteTurn()
 			));
-			append(BitBoardMoveConstants::getImmediateCaptures(
+			pushAllCheckless(BitBoardMoveConstants::getImmediateCaptures(
 				_currentBoard.isWhiteTurn(),
 				position,
 				_currentBoard.bitBoards(),

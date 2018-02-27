@@ -10,7 +10,7 @@ public:
 		_generator(generator)
 	{}
 
-	Move const * getMove(const GameSet& gameSet) const override
+	Move const * getMove(const GameSet& gameSet) override
 	{
 		if (_depth == 0)
 		{

@@ -17,9 +17,8 @@
 class MoveFactory
 {
 public:
-	MoveFactory(const Board& currentBoard, const Option<Board>& lastBoard)
-		: _currentBoard(currentBoard),
-		_lastBoard(lastBoard)
+	MoveFactory(const Board& currentBoard)
+		: _currentBoard(currentBoard)
 	{}
 
 	const std::shared_ptr<std::vector<Move const *>> getLegalMoves() const
@@ -27,7 +26,7 @@ public:
 		return _legalMap.get(_currentBoard).getOrElse([this]() {
 			std::shared_ptr<std::vector<Move const *>> legalMoves(std::make_shared<std::vector<Move const *>>());
 
-			FastMath::pushAllPointer(legalMoves, PawnMoveFactory(_currentBoard, _lastBoard).getLegalMoves());
+			FastMath::pushAllPointer(legalMoves, PawnMoveFactory(_currentBoard).getLegalMoves()); // check en passant
 			FastMath::pushAllPointer(legalMoves, KnightMoveFactory(_currentBoard).getLegalMoves());
 			FastMath::pushAllPointer(legalMoves, BishopMoveFactory(_currentBoard).getLegalMoves());
 			FastMath::pushAllPointer(legalMoves, RookMoveFactory(_currentBoard).getLegalMoves());
@@ -45,5 +44,4 @@ private:
 	static FixedUnorderedMap<Board, std::shared_ptr<std::vector<Move const *>>, BoardHash> _legalMap;
 
 	const Board _currentBoard;
-	const Option<Board> _lastBoard;
 };

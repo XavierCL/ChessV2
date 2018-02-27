@@ -8,7 +8,7 @@
 class Artificial
 {
 public:
-	virtual Move const * getMove(const GameSet& gameSet) const = 0;
+	virtual Move const * getMove(const GameSet& gameSet) = 0;
 };
 
 #endif

@@ -17,7 +17,6 @@ public:
 
 	GameSet()
 		: _currentBoard(),
-		_lastBoard(),
 		_history{ { _currentBoard , 1 } },
 		_remainingNonCapturingCount(ALLOWED_NON_CAPTURING_COUNT),
 		_gameStatusNoMatterLegalMoves(generateGameStatusNoMatterLegalMoves()),
@@ -27,7 +26,6 @@ public:
 
 	GameSet(const Board& currentBoard, const Board& lastBoard, const std::unordered_map<Board, unsigned char, BoardHash>& history, const unsigned char& remainingNonCapturingCount)
 		: _currentBoard(currentBoard),
-		_lastBoard(lastBoard),
 		_history(history),
 		_remainingNonCapturingCount(remainingNonCapturingCount),
 		_gameStatusNoMatterLegalMoves(generateGameStatusNoMatterLegalMoves()),
@@ -74,6 +72,32 @@ public:
 		return _currentBoard;
 	}
 
+	const size_t historyHash() const
+	{
+		size_t currentHash = 0;
+		size_t currentOddNumber = 5;
+		for (const auto historyCount : _history)
+		{
+			currentHash += historyCount.second * currentOddNumber;
+			currentOddNumber += 2;
+		}
+		return currentHash;
+	}
+
+	const size_t hash() const
+	{
+		_currentBoard.hash()
+			+ CHAR_HASH(_remainingNonCapturingCount) * 3
+			+ SIZE_HASH(historyHash()) * 5;
+	}
+
+	const bool operator==(const GameSet& other) const
+	{
+		return _currentBoard == other._currentBoard
+			&& _history == other._history
+			&& _remainingNonCapturingCount == other._remainingNonCapturingCount;
+	}
+
 private:
 
 	const static unsigned char ALLOWED_NON_CAPTURING_COUNT = 50;
@@ -116,8 +140,7 @@ private:
 		if (_gameStatusNoMatterLegalMoves == Option<GameStatus>(GameStatus::LIVE) || _gameStatusNoMatterLegalMoves == Option<GameStatus>())
 		{
 			return MoveFactory(
-				_currentBoard,
-				_lastBoard
+				_currentBoard
 			).getLegalMoves();
 		}
 		else
@@ -151,8 +174,10 @@ private:
 		});
 	}
 
+	static const std::hash<unsigned char> CHAR_HASH;
+	static const std::hash<size_t> SIZE_HASH;
+
 	const Board _currentBoard;
-	const Option<Board> _lastBoard;
 	const std::unordered_map<Board, unsigned char, BoardHash> _history;
 	const unsigned char _remainingNonCapturingCount;
 	const Option<GameStatus> _gameStatusNoMatterLegalMoves;

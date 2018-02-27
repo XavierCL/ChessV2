@@ -2,6 +2,7 @@
 
 #include "../Libraries/Headers/Moves/Factories/BitBoardMoveConstants.h"
 #include "../Libraries/Headers/Artificial/BruteRecurseArtificial.h"
+#include "../Libraries/Headers/Artificial/HeuristicSelective/HeuristicSelectiveArtificial.h"
 
 #include <ctime>
 
@@ -426,7 +427,8 @@ void GameUI::startNewGame()
 		}
 		else
 		{
-			_artificial = new BruteRecurseArtificial(5, _randomGenerator);
+			//_artificial = new BruteRecurseArtificial(5, _randomGenerator);
+			_artificial = new HeuristicSelectiveArtificial(10000, 1, 300000, _randomGenerator);
 		}
 	}
 	else

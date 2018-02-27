@@ -123,9 +123,6 @@
     <ClInclude Include="Headers\Artificial\BruteRecurseArtificial.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Headers\Artificial\HeuristicSelectiveArtificial.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Headers\Artificial\BruteRecurseWithLegalsArtificial.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -136,6 +133,18 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Headers\utils\FixedUnorderedMap.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Headers\Artificial\HeuristicSelective\HeuristicSelectiveArtificial.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Headers\Artificial\HeuristicSelective\HeuristicSelectiveGameTree.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Headers\Artificial\HeuristicSelective\HeuristicSelectiveGameNode.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Headers\Game\GameSetHash.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -171,6 +180,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Sources\utils\FastMath.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Sources\Artificial\HeuristicSelective\HeuristicSelectiveGameNode.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

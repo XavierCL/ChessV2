@@ -138,12 +138,15 @@
     <ClInclude Include="Headers\Artificial\Artificial.h" />
     <ClInclude Include="Headers\Artificial\BruteRecurseArtificial.h" />
     <ClInclude Include="Headers\Artificial\BruteRecurseWithLegalsArtificial.h" />
-    <ClInclude Include="Headers\Artificial\HeuristicSelectiveArtificial.h" />
+    <ClInclude Include="Headers\Artificial\HeuristicSelective\HeuristicSelectiveArtificial.h" />
+    <ClInclude Include="Headers\Artificial\HeuristicSelective\HeuristicSelectiveGameNode.h" />
+    <ClInclude Include="Headers\Artificial\HeuristicSelective\HeuristicSelectiveGameTree.h" />
     <ClInclude Include="Headers\Boards\BitBoardRayConstants.h" />
     <ClInclude Include="Headers\Boards\BoardHash.h" />
     <ClInclude Include="Headers\Exceptions\NoLegalMoveException.h" />
     <ClInclude Include="Headers\Boards\Board.h" />
     <ClInclude Include="Headers\Game\GameSet.h" />
+    <ClInclude Include="Headers\Game\GameSetHash.h" />
     <ClInclude Include="Headers\Game\GameStatus.h" />
     <ClInclude Include="Headers\Boards\BitBoard.h" />
     <ClInclude Include="Headers\Moves\Effectors\CaptureMove.h" />
@@ -180,6 +183,7 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Sources\Artificial\HeuristicSelective\HeuristicSelectiveGameNode.cpp" />
     <ClCompile Include="Sources\Boards\BitBoardRayConstants.cpp" />
     <ClCompile Include="Sources\Boards\BitBoards.cpp" />
     <ClCompile Include="Sources\Boards\Board.cpp" />

@@ -6,9 +6,8 @@
 class PawnMoveFactory: public GenericMoveFactory
 {
 public:
-	PawnMoveFactory(const Board& currentBoard, const Option<Board>& lastBoard)
-		: GenericMoveFactory(4 * currentBoard.bitBoards().populationCount(PieceType::PAWN, currentBoard.isWhiteTurn()), currentBoard),
-		_lastBoard(lastBoard)
+	PawnMoveFactory(const Board& currentBoard)
+		: GenericMoveFactory(4 * currentBoard.bitBoards().populationCount(PieceType::PAWN, currentBoard.isWhiteTurn()), currentBoard)
 	{}
 
 protected:
@@ -31,7 +30,4 @@ protected:
 			));
 		});
 	}
-
-private:
-	const Option<Board> _lastBoard;
 };

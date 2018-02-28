@@ -19,11 +19,6 @@ public:
 		HeuristicSelectiveGameNode::GENERATOR = generator;
 	}
 
-	~HeuristicSelectiveArtificial()
-	{
-		int temp1 = 0;
-	}
-
 	Move const * getMove(const GameSet& gameSet) override
 	{
 		_gameTree.playMove(gameSet);

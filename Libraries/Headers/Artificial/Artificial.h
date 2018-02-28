@@ -8,6 +8,9 @@
 class Artificial
 {
 public:
+	virtual ~Artificial()
+	{}
+
 	virtual Move const * getMove(const GameSet& gameSet) = 0;
 };
 

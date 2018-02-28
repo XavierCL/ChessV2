@@ -15,7 +15,7 @@ public:
 	{
 		_root->remove();
 		delete _root;
-		std::cout << "Ratio : " << averageRatio << "\n";
+		std::cout << "Ratio : " << 1 / averageRatio << "\n";
 	}
 
 	Move const * const playMove()
@@ -74,7 +74,7 @@ private:
 				{
 					//cout << "Selected tree: " << child->size() << "\n";
 					//cout << "Relative size: " << (child->size() * _root->children().size()) / (double)_root->size() << "\n\n";
-					averageRatio = (averageRatio * averageCount + sqrt((child->size() * _root->children().size()) / (double)_root->size())) / (averageCount + 1);
+					averageRatio = (averageRatio * averageCount + (double)_root->size() / (child->size() * _root->children().size())) / (averageCount + 1);
 					++averageCount;
 					newRoot = child;
 				}

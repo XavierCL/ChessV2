@@ -4,6 +4,7 @@
 
 #include "../../utils/Option.hpp"
 
+#include <cmath>
 #include <random>
 
 class HeuristicSelectiveGameNode
@@ -19,6 +20,7 @@ public:
 	{
 		_utility = estimatedUtility();
 		_averageUtility = _utility;
+		_nonBiaisedUtility = _utility;
 	}
 
 	void remove()
@@ -42,17 +44,30 @@ public:
 		}
 	}
 
+	const double nonBiaisedUtility() const
+	{
+		return _nonBiaisedUtility;
+	}
+
 	void develop()
 	{
-		if (!_isLeaf)
+		if (!_isTerminal)
 		{
-			chosenOne()->develop();
-		}
-		else
-		{
-			const double oldUtility = utility();
-			developDepth2();
-			if (_parent) _parent->backPropagateUtility(this, oldUtility);
+			if (!_isLeaf)
+			{
+				nonBiaisedChosenOne()->develop();
+			}
+			else
+			{
+				const double oldUtility = utility();
+				const double oldNonBiaisedUtility = nonBiaisedUtility();
+				developDepth2();
+				if (_parent)
+				{
+					_parent->backPropagateUtility(this, oldUtility);
+					_parent->backPropagateNonBiaisedUtility(this, oldNonBiaisedUtility);
+				}
+			}
 		}
 	}
 
@@ -91,17 +106,35 @@ public:
 		return chosens[aDistributor(*GENERATOR)];
 	}
 
+	HeuristicSelectiveGameNode * const nonBiaisedChosenOne() const
+	{
+		std::vector<HeuristicSelectiveGameNode*> chosens;
+		chosens.reserve(_children.size());
+		for (auto* child : _children)
+		{
+			if (_nonBiaisedUtility == child->nonBiaisedUtility() && !child->isTerminal())
+			{
+				chosens.push_back(child);
+			}
+		}
+		std::uniform_int_distribution<int> aDistributor(0, chosens.size() - 1);
+		return chosens[aDistributor(*GENERATOR)];
+	}
+
 	void developDepth1()
 	{
-		_children.reserve(_gameSet.getLegals()->size());
-		for (Move const * const move : *_gameSet.getLegals())
+		if (!_isTerminal)
 		{
-			const GameSet child(_gameSet.playMove(*move));
-			HeuristicSelectiveGameNode* childNode(new HeuristicSelectiveGameNode(child, move, this));
-			_children.push_back(childNode);
+			_children.reserve(_gameSet.getLegals()->size());
+			for (Move const * const move : *_gameSet.getLegals())
+			{
+				const GameSet child(_gameSet.playMove(*move));
+				HeuristicSelectiveGameNode* childNode(new HeuristicSelectiveGameNode(child, move, this));
+				_children.push_back(childNode);
+			}
+			gatherChildrenUtility();
+			_size += _gameSet.getLegals()->size();
 		}
-		gatherChildrenUtility();
-		_size += _gameSet.getLegals()->size();
 	}
 
 	const bool isTerminal() const
@@ -127,6 +160,19 @@ private:
 			if (_parent)
 			{
 				_parent->backPropagateUtility(this, previousUtility);
+			}
+		}
+	}
+
+	void backPropagateNonBiaisedUtility(HeuristicSelectiveGameNode* updatedChild, const double &oldUtility)
+	{
+		if (updatedChild->nonBiaisedUtility() != oldUtility)
+		{
+			const double previousUtility = utility();
+			gatherChildrenUtility();
+			if (_parent)
+			{
+				_parent->backPropagateNonBiaisedUtility(this, previousUtility);
 			}
 		}
 	}
@@ -193,36 +239,67 @@ private:
 		if (_gameSet.isWhiteTurn())
 		{
 			double maxUtility = -101;
+			double maxNonBiaisedUtility = -101;
 			for (auto* &node : _children)
 			{
 				const double nodeUtility = node->utility();
+				const double nodeNonBiaisedUtility = node->nonBiaisedUtility();
 				_averageUtility += nodeUtility;
+				if (nodeNonBiaisedUtility > maxNonBiaisedUtility)
+				{
+					_isTerminal = node->_isTerminal;
+					maxNonBiaisedUtility = nodeNonBiaisedUtility;
+				}
+				else if (nodeNonBiaisedUtility == maxNonBiaisedUtility)
+				{
+					_isTerminal = _isTerminal && node->_isTerminal;
+				}
 				if (nodeUtility > maxUtility)
 				{
 					maxUtility = nodeUtility;
-					_isTerminal = node->_isTerminal;
 				}
 			}
 			_utility = maxUtility;
+			if (maxNonBiaisedUtility == -101)
+			{
+				int temp1 = 0;
+			}
+			_nonBiaisedUtility = maxNonBiaisedUtility;
 		}
 		else
 		{
 			double minUtility = 101;
+			double minNonBiaisedUtility = 101;
 			for (auto* &node : _children)
 			{
 				const double nodeUtility = node->utility();
+				const double nodeNonBiaisedUtility = node->nonBiaisedUtility();
 				_averageUtility += nodeUtility;
+				if (nodeNonBiaisedUtility < minNonBiaisedUtility)
+				{
+					_isTerminal = node->_isTerminal;
+					minNonBiaisedUtility = nodeNonBiaisedUtility;
+				}
+				else if (nodeNonBiaisedUtility == minNonBiaisedUtility)
+				{
+					_isTerminal = _isTerminal && node->_isTerminal;
+				}
 				if (nodeUtility < minUtility)
 				{
 					minUtility = nodeUtility;
-					_isTerminal = node->_isTerminal;
 				}
 			}
 			_utility = minUtility;
+			if (minNonBiaisedUtility == -101)
+			{
+				int temp1 = 0;
+			}
+			_nonBiaisedUtility = minNonBiaisedUtility;
 		}
 	}
 
 	double _utility;
+	double _nonBiaisedUtility;
 	double _averageUtility;
 
 	// LikelyHood would depend on root depth - parent depth,

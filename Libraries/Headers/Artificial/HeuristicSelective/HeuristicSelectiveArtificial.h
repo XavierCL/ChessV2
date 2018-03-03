@@ -17,18 +17,21 @@ public:
 		_gameTree(GameSet())
 	{
 		HeuristicSelectiveGameNode::GENERATOR = generator;
+		HeuristicSelectiveGameNode::NODES.clear();
 	}
 
 	Move const * getMove(const GameSet& gameSet) override
 	{
 		_gameTree.playMove(gameSet);
 
-		// Timing should start when function is first called, but here I don't yet handle the thread deletion logic, so I'm only counting the new development
+		// Timing should start when function is first called,
+		// but here I don't yet handle the thread deletion logic,
+		// so I'm only counting the new development
 		const clock_t begin_time = clock();
 
 		_gameTree.developUntil([this, &begin_time]() {
 			const clock_t end_time = clock();
-			bool shouldStop = (1000 * (end_time - begin_time)) / CLOCKS_PER_SEC >= _msSelfTime || _gameTree.size() >= _maxNodeCount;
+			bool shouldStop = (1000 * (end_time - begin_time)) / CLOCKS_PER_SEC >= _msSelfTime || _gameTree.size() * sizeof(HeuristicSelectiveGameNode) >= _maxNodeCount;
 			return shouldStop;
 		});
 		return _gameTree.playMove();

@@ -8,30 +8,27 @@ class HeuristicSelectiveGameTree
 {
 public:
 	HeuristicSelectiveGameTree(const GameSet &gameSet)
-		: _root(new HeuristicSelectiveGameNode(gameSet, nullptr, nullptr))
+		: _root(new HeuristicSelectiveGameNode(NodeGameSet(gameSet)))
 	{}
 
 	~HeuristicSelectiveGameTree()
 	{
+		std::cout << "Ratio : " << 1 / averageRatio << "\n";
 		_root->remove();
 		delete _root;
-		std::cout << "Ratio : " << 1 / averageRatio << "\n";
 	}
 
 	Move const * const playMove()
 	{
 		HeuristicSelectiveGameNode const * const bestChild = _root->chosenOne();
-		updateNewRoot([&bestChild](const HeuristicSelectiveGameNode * child) {
-			return child == bestChild;
-		});
-		return _root->move();
+		auto const * const bestMove = getMoveFromNodeAndNextBoard(*_root, bestChild->gameSet().currentBoard());
+		updateNewRoot(_root->gameSet().rootGameSet().playMove(*bestMove));
+		return bestMove;
 	}
 
 	void playMove(const GameSet &gameSet)
 	{
-		updateNewRoot([&gameSet](const HeuristicSelectiveGameNode * child) {
-			return child->gameSet() == gameSet;
-		});
+		updateNewRoot(gameSet);
 	}
 
 	template <typename _PredicateType>
@@ -52,13 +49,13 @@ public:
 	size_t averageCount = 0;
 
 private:
-	template <typename _PredicateType>
-	void updateNewRoot(const _PredicateType& newRootPredicate)
+	void updateNewRoot(const GameSet& gameSet)
 	{
-		if (newRootPredicate(_root))
+		const Board& board = gameSet.currentBoard();
+		if (_root->gameSet().currentBoard() == board)
 		{
-			//cout << "Starting!" << "\n\n";
-			_root->developDepth1();
+			std::cout << "Starting!" << "\n\n";
+			_root->develop();
 			return;
 		}
 		else
@@ -70,10 +67,10 @@ private:
 			HeuristicSelectiveGameNode* newRoot(nullptr);
 			for (auto * child : _root->children())
 			{
-				if (newRootPredicate(child))
+				if (child->gameSet().currentBoard() == board)
 				{
 					//cout << "Selected tree: " << child->size() << "\n";
-					//cout << "Relative size: " << (child->size() * _root->children().size()) / (double)_root->size() << "\n\n";
+					//cout << "Relative size: " << (child->size() * _root->children().size()) / (double)_root->size() << "\n";
 					averageRatio = (averageRatio * averageCount + (double)_root->size() / (child->size() * _root->children().size())) / (averageCount + 1);
 					++averageCount;
 					newRoot = child;
@@ -81,14 +78,34 @@ private:
 				else
 				{
 					// mark for removal and remove in a thread while waiting for the enemy's turn
-					child->remove();
-					delete child;
+					child->removeParent(_root);
+					if (!child->hasParent())
+					{
+						delete child;
+					}
 				}
 			}
 			delete _root;
 			_root = newRoot;
-			_root->setRoot();
+			_root->setRoot(gameSet);
+			//cout << "Utility: " << _root->utility() << "\n\n";
 		}
+	}
+
+
+
+	Move const * const getMoveFromNodeAndNextBoard(const HeuristicSelectiveGameNode& currentNode, const Board& nextBoard)
+	{
+		Move const * bestMove = nullptr;
+		for (size_t i = 0; i < currentNode.gameSet().getLegals()->size(); ++i)
+		{
+			if (currentNode.gameSet().playMove(*(*currentNode.gameSet().getLegals())[i]).currentBoard() == nextBoard)
+			{
+				bestMove = (*currentNode.gameSet().getLegals())[i];
+				break;
+			}
+		}
+		return bestMove;
 	}
 
 	HeuristicSelectiveGameNode* _root;

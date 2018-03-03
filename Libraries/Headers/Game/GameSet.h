@@ -24,7 +24,7 @@ public:
 		_gameStatus(generateGameStatus())
 	{}
 
-	GameSet(const Board& currentBoard, const Board& lastBoard, const std::unordered_map<Board, unsigned char, BoardHash>& history, const unsigned char& remainingNonCapturingCount)
+	GameSet(const Board& currentBoard, const std::unordered_map<Board, unsigned char, BoardHash>& history, const unsigned char& remainingNonCapturingCount)
 		: _currentBoard(currentBoard),
 		_history(history),
 		_remainingNonCapturingCount(remainingNonCapturingCount),
@@ -41,7 +41,6 @@ public:
 
 		return GameSet(
 			newBoard,
-			_currentBoard,
 			newHistory,
 			isFiftyMoveReset(_currentBoard, newBoard) ? ALLOWED_NON_CAPTURING_COUNT : _remainingNonCapturingCount - 1
 		);
@@ -86,7 +85,7 @@ public:
 
 	const size_t hash() const
 	{
-		_currentBoard.hash()
+		return _currentBoard.hash()
 			+ CHAR_HASH(_remainingNonCapturingCount) * 3
 			+ SIZE_HASH(historyHash()) * 5;
 	}
@@ -96,6 +95,24 @@ public:
 		return _currentBoard == other._currentBoard
 			&& _history == other._history
 			&& _remainingNonCapturingCount == other._remainingNonCapturingCount;
+	}
+
+	const unsigned char remainingNonCapturingCount() const
+	{
+		return _remainingNonCapturingCount;
+	}
+
+	const unsigned char gameCount(const Board& board) const
+	{
+		auto it = _history.find(board);
+		if (it != _history.cend())
+		{
+			return it->second;
+		}
+		else
+		{
+			return 0;
+		}
 	}
 
 private:

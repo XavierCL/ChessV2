@@ -1,19 +1,17 @@
 #pragma once
 
-#include "../../Game/GameSetHash.h"
+#include "NodeGameSet.h"
 
-#include "../../utils/Option.hpp"
-
-#include <cmath>
+#include <iostream>
 #include <random>
+#include <algorithm>
 
 class HeuristicSelectiveGameNode
 {
 public:
-	HeuristicSelectiveGameNode(const GameSet &gameSet, Move const * const &move, HeuristicSelectiveGameNode * const &parent)
+	HeuristicSelectiveGameNode(const NodeGameSet &gameSet)
 		: _gameSet(gameSet),
-		_move(move),
-		_parent(parent),
+		_parents(),
 		_isLeaf(true),
 		_isTerminal(_gameSet.getStatus() != GameStatus::LIVE),
 		_size(1)
@@ -23,13 +21,40 @@ public:
 		_nonBiaisedUtility = _utility;
 	}
 
+	void addParent(HeuristicSelectiveGameNode * const &parent)
+	{
+		_parents.push_back(parent);
+	}
+
+	const size_t hasParent() const
+	{
+		return _parents.size() > 0;
+	}
+
+	void removeParent(HeuristicSelectiveGameNode const * const &parent)
+	{
+		_parents.erase(std::remove(_parents.begin(), _parents.end(), parent), _parents.end());
+		if (!hasParent())
+		{
+			remove();
+		}
+	}
+
 	void remove()
 	{
-		for (auto* child : _children)
+		//NODES.get(gameSet().currentBoard()).filter([this](HeuristicSelectiveGameNode * const foundNode) {
+		//	return this == foundNode;
+		//}).foreach([this](HeuristicSelectiveGameNode * const foundNode) {
+		//	NODES.remove(gameSet().currentBoard());
+		for (auto * child : _children)
 		{
-			child->remove();
-			delete child;
+			child->removeParent(this);
+			if (!child->hasParent())
+			{
+				delete child;
+			}
 		}
+		//});
 	}
 
 	const double utility() const
@@ -59,21 +84,15 @@ public:
 			}
 			else
 			{
-				const double oldUtility = utility();
-				const double oldNonBiaisedUtility = nonBiaisedUtility();
-				developDepth2();
-				if (_parent)
-				{
-					_parent->backPropagateUtility(this, oldUtility);
-					_parent->backPropagateNonBiaisedUtility(this, oldNonBiaisedUtility);
-				}
+				developDepth1();
 			}
 		}
 	}
 
-	void setRoot()
+	void setRoot(const GameSet& gameSet)
 	{
-		_parent = nullptr;
+		_parents.resize(0);
+		_gameSet.setRoot(gameSet);
 	}
 
 	std::vector<HeuristicSelectiveGameNode*> children()
@@ -81,14 +100,9 @@ public:
 		return _children;
 	}
 
-	const GameSet& gameSet() const
+	const NodeGameSet gameSet() const
 	{
 		return _gameSet;
-	}
-
-	Move const * const move() const
-	{
-		return _move;
 	}
 
 	HeuristicSelectiveGameNode * const chosenOne() const
@@ -121,22 +135,6 @@ public:
 		return chosens[aDistributor(*GENERATOR)];
 	}
 
-	void developDepth1()
-	{
-		if (!_isTerminal)
-		{
-			_children.reserve(_gameSet.getLegals()->size());
-			for (Move const * const move : *_gameSet.getLegals())
-			{
-				const GameSet child(_gameSet.playMove(*move));
-				HeuristicSelectiveGameNode* childNode(new HeuristicSelectiveGameNode(child, move, this));
-				_children.push_back(childNode);
-			}
-			gatherChildrenUtility();
-			_size += _gameSet.getLegals()->size();
-		}
-	}
-
 	const bool isTerminal() const
 	{
 		return _isTerminal;
@@ -148,31 +146,23 @@ public:
 	}
 
 	static std::minstd_rand0* GENERATOR;
+	static FixedUnorderedMap<Board, HeuristicSelectiveGameNode*, BoardHash> NODES;
 
 private:
 
-	void backPropagateUtility(HeuristicSelectiveGameNode* updatedChild, const double &oldUtility)
+	void backPropagateUtility()
 	{
-		if (updatedChild->utility() != oldUtility)
+		const double previousUtility = _utility;
+		const double previousNonBiaisedUtility = _nonBiaisedUtility;
+		const double previousAverageUtility = _averageUtility;
+		gatherChildrenUtility();
+		if (_utility != previousUtility
+			|| _nonBiaisedUtility != previousNonBiaisedUtility
+			|| _averageUtility != previousAverageUtility)
 		{
-			const double previousUtility = utility();
-			gatherChildrenUtility();
-			if (_parent)
+			for (auto* parent : _parents)
 			{
-				_parent->backPropagateUtility(this, previousUtility);
-			}
-		}
-	}
-
-	void backPropagateNonBiaisedUtility(HeuristicSelectiveGameNode* updatedChild, const double &oldUtility)
-	{
-		if (updatedChild->nonBiaisedUtility() != oldUtility)
-		{
-			const double previousUtility = utility();
-			gatherChildrenUtility();
-			if (_parent)
-			{
-				_parent->backPropagateNonBiaisedUtility(this, previousUtility);
+				parent->backPropagateUtility();
 			}
 		}
 	}
@@ -180,26 +170,38 @@ private:
 	void backPropagateSize(const size_t addedSize)
 	{
 		_size += addedSize;
-		if (_parent)
+		for (auto* parent : _parents)
 		{
-			_parent->backPropagateSize(addedSize);
+			parent->backPropagateSize(addedSize);
 		}
 	}
 
-	void developDepth2()
+	void developDepth1()
 	{
-		size_t addedSize = 0;
 		_children.reserve(_gameSet.getLegals()->size());
 		for (Move const * const move : *_gameSet.getLegals())
 		{
-			const GameSet child(_gameSet.playMove(*move));
-			HeuristicSelectiveGameNode* childNode(new HeuristicSelectiveGameNode(child, move, this));
-			childNode->developDepth1();
-			addedSize += childNode->_size;
+			const NodeGameSet child(_gameSet.playMove(*move));
+			HeuristicSelectiveGameNode* childNode(new HeuristicSelectiveGameNode(child));/* NODES.get(child.currentBoard()).filter([&child](HeuristicSelectiveGameNode* const foundNode) {
+				if (foundNode->gameSet() == child)
+				{
+					std::cout << "\n\n Reused Node! \n\n";
+					return true;
+				}
+				else
+				{
+					return false;
+				}
+			}).getOrElse([&child, this]() {
+				auto* node = new HeuristicSelectiveGameNode(child);
+				NODES.set(child.currentBoard(), node);
+				return node;
+			}));*/
+			childNode->addParent(this);
 			_children.push_back(childNode);
 		}
-		gatherChildrenUtility();
-		backPropagateSize(addedSize);
+		backPropagateSize(_gameSet.getLegals()->size());
+		backPropagateUtility();
 	}
 
 	const double estimatedUtility()
@@ -260,10 +262,6 @@ private:
 				}
 			}
 			_utility = maxUtility;
-			if (maxNonBiaisedUtility == -101)
-			{
-				int temp1 = 0;
-			}
 			_nonBiaisedUtility = maxNonBiaisedUtility;
 		}
 		else
@@ -290,10 +288,6 @@ private:
 				}
 			}
 			_utility = minUtility;
-			if (minNonBiaisedUtility == -101)
-			{
-				int temp1 = 0;
-			}
 			_nonBiaisedUtility = minNonBiaisedUtility;
 		}
 	}
@@ -302,16 +296,11 @@ private:
 	double _nonBiaisedUtility;
 	double _averageUtility;
 
-	// LikelyHood would depend on root depth - parent depth,
-	//but since a node can have multiple parents i'll just use the utility for the likelyHood too.
-	//double _likelyHood;
-
-	const GameSet _gameSet;
-	Move const * const _move;
+	NodeGameSet _gameSet;
 
 	bool _isLeaf;
 	bool _isTerminal;
 	size_t _size;
-	HeuristicSelectiveGameNode* _parent;
+	std::vector<HeuristicSelectiveGameNode*> _parents;
 	std::vector<HeuristicSelectiveGameNode*> _children;
 };

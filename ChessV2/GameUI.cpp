@@ -428,7 +428,7 @@ void GameUI::startNewGame()
 		else
 		{
 			//_artificial = new BruteRecurseArtificial(5, _randomGenerator);
-			_artificial = new HeuristicSelectiveArtificial(15000, 1, 400000, _randomGenerator);
+			_artificial = new HeuristicSelectiveArtificial(10000, 1, 1000000000, _randomGenerator);
 		}
 	}
 	else
@@ -468,7 +468,7 @@ void GameUI::computerPlay()
 	{
 		if (_gameSet->isWhiteTurn())
 		{
-			Move const * move = BruteRecurseArtificial(5, _randomGenerator).getMove(*_gameSet);
+			Move const * move = BruteRecurseArtificial(3, _randomGenerator).getMove(*_gameSet);
 			GameSet* temp = new GameSet(_gameSet->playMove(*move));
 			delete _gameSet;
 			_gameSet = temp;

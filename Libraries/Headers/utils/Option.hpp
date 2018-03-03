@@ -107,6 +107,26 @@ public:
 		}
 	}
 
+	template <typename _PredicateType>
+	const Option<_Type> filter(const _PredicateType& predicate) const
+	{
+		if (isDefined())
+		{
+			if (predicate(*_inner))
+			{
+				return *this;
+			}
+			else
+			{
+				return Option<_Type>();
+			}
+		}
+		else
+		{
+			return *this;
+		}
+	}
+
 	const bool operator==(const Option<_Type>& other) const
 	{
 		if (isDefined() && other.isDefined())

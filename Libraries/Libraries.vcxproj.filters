@@ -147,6 +147,9 @@
     <ClInclude Include="Headers\Game\GameSetHash.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Headers\Artificial\HeuristicSelective\NodeGameSet.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Sources\Game\GameSet.cpp">

@@ -1,7 +1,7 @@
 #ifndef HEURISTIC_SELECTIVE_ARTIFICIAL_H
 #define HEURISTIC_SELECTIVE_ARTIFICIAL_H
 
-#include "HeuristicSelectiveGameTree.h"
+#include "HeuristicSelectiveGameTreeND.h"
 
 #include "../Artificial.h"
 
@@ -19,8 +19,8 @@ public:
 		_maxNodeCount(maxNodeCount),
 		_gameTree(GameSet())
 	{
-		HeuristicSelectiveGameNode::GENERATOR = generator;
-		HeuristicSelectiveGameNode::NODES.clear();
+		HeuristicSelectiveGameNodeND::GENERATOR = generator;
+		HeuristicSelectiveGameNodeND::NODES.clear();
 	}
 
 	Move const * getMove(const GameSet& gameSet) override
@@ -40,7 +40,7 @@ public:
 
 		_gameTree.developUntil([this, &begin_time]() {
 			const clock_t end_time = clock();
-			bool shouldStop = (1000 * (end_time - begin_time)) / CLOCKS_PER_SEC >= _msSelfTime || _gameTree.size() * sizeof(HeuristicSelectiveGameNode) >= _maxNodeCount;
+			bool shouldStop = (1000 * (end_time - begin_time)) / CLOCKS_PER_SEC >= _msSelfTime || _gameTree.size() * sizeof(HeuristicSelectiveGameNodeND) >= _maxNodeCount;
 			return shouldStop;
 		});
 		printDebugInfo();
@@ -54,14 +54,14 @@ private:
 	const unsigned char _threadCount;
 	const size_t _maxNodeCount;
 
-	HeuristicSelectiveGameTree _gameTree;
+	HeuristicSelectiveGameTreeND _gameTree;
 
 	void printDebugInfo()
 	{
 		Logger::info("Average prediction: " + std::to_string(1 / (double)_gameTree.averageRatio) + "\n"
 			+ "Is white: " + std::to_string(_gameTree.root()->gameSet().isWhiteTurn()) + "\n"
 			+ "Whole tree: " + std::to_string(_gameTree.root()->size()) + "\n"
-			+ "Utility : " + std::to_string(_gameTree.root()->biaisedGameScore().utility()) + "\n\n");
+			+ "Utility : " + std::to_string(_gameTree.root()->utility()) + "\n\n");
 	}
 };
 

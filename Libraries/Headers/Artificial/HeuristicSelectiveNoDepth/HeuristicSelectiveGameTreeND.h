@@ -1,17 +1,17 @@
 #pragma once
 
-#include "HeuristicSelectiveGameNode.h"
+#include "HeuristicSelectiveGameNodeND.h"
 
 #include <iostream>
 
-class HeuristicSelectiveGameTree
+class HeuristicSelectiveGameTreeND
 {
 public:
-	HeuristicSelectiveGameTree(const GameSet &gameSet)
-		: _root(new HeuristicSelectiveGameNode(NodeGameSet(gameSet), GameScore(), BiaisedGameScore()))
+	HeuristicSelectiveGameTreeND(const GameSet &gameSet)
+		: _root(new HeuristicSelectiveGameNodeND(NodeGameSetND(gameSet)))
 	{}
 
-	~HeuristicSelectiveGameTree()
+	~HeuristicSelectiveGameTreeND()
 	{
 		_root->remove();
 		delete _root;
@@ -19,7 +19,7 @@ public:
 
 	Move const * const playMove()
 	{
-		HeuristicSelectiveGameNode const * const bestChild = _root->chosenOne();
+		HeuristicSelectiveGameNodeND const * const bestChild = _root->chosenOne();
 		auto const * const bestMove = getMoveFromNodeAndNextBoard(*_root, bestChild->gameSet().currentBoard());
 		updateNewRoot(_root->gameSet().rootGameSet().playMove(*bestMove));
 		return bestMove;
@@ -44,7 +44,7 @@ public:
 		return _root->size();
 	}
 
-	HeuristicSelectiveGameNode* const root() const
+	HeuristicSelectiveGameNodeND* const root() const
 	{
 		return _root;
 	}
@@ -66,7 +66,7 @@ private:
 		{
 			_root->develop();
 
-			HeuristicSelectiveGameNode* newRoot(nullptr);
+			HeuristicSelectiveGameNodeND* newRoot(nullptr);
 			for (auto * child : _root->children())
 			{
 				if (child->gameSet().currentBoard() == board)
@@ -94,7 +94,7 @@ private:
 		}
 	}
 
-	Move const * const getMoveFromNodeAndNextBoard(const HeuristicSelectiveGameNode& currentNode, const Board& nextBoard)
+	Move const * const getMoveFromNodeAndNextBoard(const HeuristicSelectiveGameNodeND& currentNode, const Board& nextBoard)
 	{
 		Move const * bestMove = nullptr;
 		for (size_t i = 0; i < currentNode.gameSet().getLegals()->size(); ++i)
@@ -108,5 +108,5 @@ private:
 		return bestMove;
 	}
 
-	HeuristicSelectiveGameNode* _root;
+	HeuristicSelectiveGameNodeND* _root;
 };

@@ -1,6 +1,8 @@
 #pragma once
 
 #include "NodeGameSet.h"
+#include "GameScore.h"
+#include "BiaisedGameScore.h"
 
 #include <iostream>
 #include <random>
@@ -9,17 +11,15 @@
 class HeuristicSelectiveGameNode
 {
 public:
-	HeuristicSelectiveGameNode(const NodeGameSet &gameSet)
+	HeuristicSelectiveGameNode(const NodeGameSet &gameSet, const GameScore &parentGameScore, const BiaisedGameScore &parentBiaisedGameScore)
 		: _gameSet(gameSet),
 		_parents(),
 		_isLeaf(true),
-		_isTerminal(_gameSet.getStatus() != GameStatus::LIVE),
-		_size(1)
-	{
-		_utility = estimatedUtility();
-		_averageUtility = _utility;
-		_nonBiaisedUtility = _utility;
-	}
+		_isTerminal(gameSet.getStatus() != GameStatus::LIVE),
+		_size(1),
+		_gameScore(GameScore(estimateScore(gameSet), parentGameScore)),
+		_biaisedGameScore(BiaisedGameScore(estimateScore(gameSet), parentBiaisedGameScore))
+	{}
 
 	void addParent(HeuristicSelectiveGameNode * const &parent)
 	{
@@ -57,21 +57,9 @@ public:
 		//});
 	}
 
-	const double utility() const
+	const BiaisedGameScore biaisedGameScore() const
 	{
-		if (_isLeaf)
-		{
-			return _utility;
-		}
-		else
-		{
-			return (_utility + (_averageUtility / _children.size()) * 0.00001) / 1.00001;
-		}
-	}
-
-	const double nonBiaisedUtility() const
-	{
-		return _nonBiaisedUtility;
+		return _biaisedGameScore;
 	}
 
 	void develop()
@@ -80,7 +68,7 @@ public:
 		{
 			if (!_isLeaf)
 			{
-				nonBiaisedChosenOne()->develop();
+				chosenOne()->develop();
 			}
 			else
 			{
@@ -105,28 +93,54 @@ public:
 		return _gameSet;
 	}
 
-	HeuristicSelectiveGameNode * const chosenOne() const
+	HeuristicSelectiveGameNode * const biaisedChosenOne() const
 	{
 		std::vector<HeuristicSelectiveGameNode*> chosens;
 		chosens.reserve(_children.size());
-		for (auto* child : _children)
+		BiaisedGameScore bestBiaisedGameScore(_children[0]->_biaisedGameScore);
+		if (_gameSet.isWhiteTurn())
 		{
-			if (_utility == child->utility())
+			for (size_t i = 1; i < _children.size(); ++i)
 			{
-				chosens.push_back(child);
+				auto* const child = _children[i];
+				if (child->_biaisedGameScore.biaisedWhiteWinsOver(bestBiaisedGameScore))
+				{
+					chosens.clear();
+					chosens.push_back(child);
+				}
+				else if (!child->_biaisedGameScore.biaisedBlackWinsOver(bestBiaisedGameScore))
+				{
+					chosens.push_back(child);
+				}
+			}
+		}
+		else
+		{
+			for (size_t i = 1; i < _children.size(); ++i)
+			{
+				auto* const child = _children[i];
+				if (child->_biaisedGameScore.biaisedBlackWinsOver(bestBiaisedGameScore))
+				{
+					chosens.clear();
+					chosens.push_back(child);
+				}
+				else if (!child->_biaisedGameScore.biaisedWhiteWinsOver(bestBiaisedGameScore))
+				{
+					chosens.push_back(child);
+				}
 			}
 		}
 		std::uniform_int_distribution<int> aDistributor(0, chosens.size() - 1);
 		return chosens[aDistributor(*GENERATOR)];
 	}
 
-	HeuristicSelectiveGameNode * const nonBiaisedChosenOne() const
+	HeuristicSelectiveGameNode * const chosenOne() const
 	{
 		std::vector<HeuristicSelectiveGameNode*> chosens;
 		chosens.reserve(_children.size());
-		for (auto* child : _children)
+		for (auto* const child : _children)
 		{
-			if (_nonBiaisedUtility == child->nonBiaisedUtility() && !child->isTerminal())
+			if (_gameScore == child->_gameScore && !child->isTerminal())
 			{
 				chosens.push_back(child);
 			}
@@ -152,13 +166,11 @@ private:
 
 	void backPropagateUtility()
 	{
-		const double previousUtility = _utility;
-		const double previousNonBiaisedUtility = _nonBiaisedUtility;
-		const double previousAverageUtility = _averageUtility;
+		const GameScore previousGameScore = _gameScore;
+		const BiaisedGameScore previousBiaisedGameScore = _biaisedGameScore;
 		gatherChildrenUtility();
-		if (_utility != previousUtility
-			|| _nonBiaisedUtility != previousNonBiaisedUtility
-			|| _averageUtility != previousAverageUtility)
+		if (_gameScore != previousGameScore
+			|| _biaisedGameScore != previousBiaisedGameScore)
 		{
 			for (auto* parent : _parents)
 			{
@@ -182,7 +194,7 @@ private:
 		for (Move const * const move : *_gameSet.getLegals())
 		{
 			const NodeGameSet child(_gameSet.playMove(*move));
-			HeuristicSelectiveGameNode* childNode(new HeuristicSelectiveGameNode(child));/* NODES.get(child.currentBoard()).filter([&child](HeuristicSelectiveGameNode* const foundNode) {
+			HeuristicSelectiveGameNode* childNode(new HeuristicSelectiveGameNode(child, _gameScore, _biaisedGameScore));/* NODES.get(child.currentBoard()).filter([&child](HeuristicSelectiveGameNode* const foundNode) {
 				if (foundNode->gameSet() == child)
 				{
 					std::cout << "\n\n Reused Node! \n\n";
@@ -204,99 +216,100 @@ private:
 		backPropagateUtility();
 	}
 
-	const double estimatedUtility()
+	static const double estimateScore(const NodeGameSet &gameSet)
 	{
-		if (_gameSet.getStatus() == GameStatus::FIFTY_MOVE || _gameSet.getStatus() == GameStatus::NO_LEGAL_MOVE || _gameSet.getStatus() == GameStatus::THREEFOLD_REPETITION)
+		if (gameSet.getStatus() == GameStatus::FIFTY_MOVE || gameSet.getStatus() == GameStatus::NO_LEGAL_MOVE || gameSet.getStatus() == GameStatus::THREEFOLD_REPETITION)
 			return 0;
-		else if (_gameSet.getStatus() == GameStatus::WHITE_WIN)
-			return 100;
-		else if (_gameSet.getStatus() == GameStatus::BLACK_WIN)
-			return -100;
+		else if (gameSet.getStatus() == GameStatus::WHITE_WIN)
+			return 0;
+		else if (gameSet.getStatus() == GameStatus::BLACK_WIN)
+			return 0;
 		else
 		{
 			double whiteScore = 0;
-			whiteScore += 1 * (double)_gameSet.currentBoard().bitBoards().populationCount(PieceType::PAWN, true);
-			whiteScore += 3 * (double)_gameSet.currentBoard().bitBoards().populationCount(PieceType::KNIGHT, true);
-			whiteScore += 3 * (double)_gameSet.currentBoard().bitBoards().populationCount(PieceType::BISHOP, true);
-			whiteScore += 5 * (double)_gameSet.currentBoard().bitBoards().populationCount(PieceType::ROOK, true);
-			whiteScore += 9 * (double)_gameSet.currentBoard().bitBoards().populationCount(PieceType::QUEEN, true);
+			whiteScore += 1 * (double)gameSet.currentBoard().bitBoards().populationCount(PieceType::PAWN, true);
+			whiteScore += 3 * (double)gameSet.currentBoard().bitBoards().populationCount(PieceType::KNIGHT, true);
+			whiteScore += 3 * (double)gameSet.currentBoard().bitBoards().populationCount(PieceType::BISHOP, true);
+			whiteScore += 5 * (double)gameSet.currentBoard().bitBoards().populationCount(PieceType::ROOK, true);
+			whiteScore += 9 * (double)gameSet.currentBoard().bitBoards().populationCount(PieceType::QUEEN, true);
 
 			double blackScore = 0;
-			blackScore += 1 * (double)_gameSet.currentBoard().bitBoards().populationCount(PieceType::PAWN, false);
-			blackScore += 3 * (double)_gameSet.currentBoard().bitBoards().populationCount(PieceType::KNIGHT, false);
-			blackScore += 3 * (double)_gameSet.currentBoard().bitBoards().populationCount(PieceType::BISHOP, false);
-			blackScore += 5 * (double)_gameSet.currentBoard().bitBoards().populationCount(PieceType::ROOK, false);
-			blackScore += 9 * (double)_gameSet.currentBoard().bitBoards().populationCount(PieceType::QUEEN, false);
+			blackScore += 1 * (double)gameSet.currentBoard().bitBoards().populationCount(PieceType::PAWN, false);
+			blackScore += 3 * (double)gameSet.currentBoard().bitBoards().populationCount(PieceType::KNIGHT, false);
+			blackScore += 3 * (double)gameSet.currentBoard().bitBoards().populationCount(PieceType::BISHOP, false);
+			blackScore += 5 * (double)gameSet.currentBoard().bitBoards().populationCount(PieceType::ROOK, false);
+			blackScore += 9 * (double)gameSet.currentBoard().bitBoards().populationCount(PieceType::QUEEN, false);
 
 			const double score = (whiteScore / (blackScore + 1)) - (blackScore / (whiteScore + 1));
 
-			return score;
+			return 0;
 		}
 	}
 
 	void gatherChildrenUtility()
 	{
 		_isLeaf = false;
-		_averageUtility = 0;
+		double averageUtility = _children[0]->_biaisedGameScore.averageUtility();
 		if (_gameSet.isWhiteTurn())
 		{
-			double maxUtility = -101;
-			double maxNonBiaisedUtility = -101;
-			for (auto* &node : _children)
+			_gameScore = _children[0]->_gameScore;
+			_biaisedGameScore = _children[0]->_biaisedGameScore;
+			_isTerminal = _children[0]->_isTerminal;
+			for (size_t i = 1; i < _children.size(); ++i)
 			{
-				const double nodeUtility = node->utility();
-				const double nodeNonBiaisedUtility = node->nonBiaisedUtility();
-				_averageUtility += nodeUtility;
-				if (nodeNonBiaisedUtility > maxNonBiaisedUtility)
+				auto* const node = _children[i];
+				GameScore nodeGameScore(node->_gameScore);
+				BiaisedGameScore nodeBiaisedGameScore(node->_biaisedGameScore);
+
+				averageUtility += nodeBiaisedGameScore.averageUtility();
+				if (nodeGameScore.whiteWinsOver(_gameScore))
 				{
 					_isTerminal = node->_isTerminal;
-					maxNonBiaisedUtility = nodeNonBiaisedUtility;
+					_gameScore = nodeGameScore;
 				}
-				else if (nodeNonBiaisedUtility == maxNonBiaisedUtility)
+				else if (!nodeGameScore.blackWinsOver(_gameScore))
 				{
 					_isTerminal = _isTerminal && node->_isTerminal;
 				}
-				if (nodeUtility > maxUtility)
+				if (nodeBiaisedGameScore.biaisedWhiteWinsOver(_biaisedGameScore))
 				{
-					maxUtility = nodeUtility;
+					_biaisedGameScore = nodeBiaisedGameScore;
 				}
 			}
-			_utility = maxUtility;
-			_nonBiaisedUtility = maxNonBiaisedUtility;
 		}
 		else
 		{
-			double minUtility = 101;
-			double minNonBiaisedUtility = 101;
-			for (auto* &node : _children)
+			_gameScore = _children[0]->_gameScore;
+			_biaisedGameScore = _children[0]->_biaisedGameScore;
+			_isTerminal = _children[0]->_isTerminal;
+			for (size_t i = 1; i < _children.size(); ++i)
 			{
-				const double nodeUtility = node->utility();
-				const double nodeNonBiaisedUtility = node->nonBiaisedUtility();
-				_averageUtility += nodeUtility;
-				if (nodeNonBiaisedUtility < minNonBiaisedUtility)
+				auto* const node = _children[i];
+				GameScore nodeGameScore(node->_gameScore);
+				BiaisedGameScore nodeBiaisedGameScore(node->_biaisedGameScore);
+
+				averageUtility += nodeBiaisedGameScore.averageUtility();
+				if (nodeGameScore.blackWinsOver(_gameScore))
 				{
 					_isTerminal = node->_isTerminal;
-					minNonBiaisedUtility = nodeNonBiaisedUtility;
+					_gameScore = nodeGameScore;
 				}
-				else if (nodeNonBiaisedUtility == minNonBiaisedUtility)
+				else if (!nodeGameScore.whiteWinsOver(_gameScore))
 				{
 					_isTerminal = _isTerminal && node->_isTerminal;
 				}
-				if (nodeUtility < minUtility)
+				if (nodeBiaisedGameScore.biaisedBlackWinsOver(_biaisedGameScore))
 				{
-					minUtility = nodeUtility;
+					_biaisedGameScore = nodeBiaisedGameScore;
 				}
 			}
-			_utility = minUtility;
-			_nonBiaisedUtility = minNonBiaisedUtility;
 		}
+		_biaisedGameScore.averageUtility(averageUtility / _children.size());
 	}
 
-	double _utility;
-	double _nonBiaisedUtility;
-	double _averageUtility;
-
 	NodeGameSet _gameSet;
+	GameScore _gameScore;
+	BiaisedGameScore _biaisedGameScore;
 
 	bool _isLeaf;
 	bool _isTerminal;

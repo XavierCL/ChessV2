@@ -153,6 +153,24 @@
     <ClInclude Include="Headers\utils\Logger.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Headers\Artificial\HeuristicSelective\GameScore.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Headers\Artificial\HeuristicSelectiveNoDepth\HeuristicSelectiveArtificialND.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Headers\Artificial\HeuristicSelectiveNoDepth\HeuristicSelectiveGameNodeND.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Headers\Artificial\HeuristicSelectiveNoDepth\HeuristicSelectiveGameTreeND.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Headers\Artificial\HeuristicSelectiveNoDepth\NodeGameSetND.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Headers\Artificial\HeuristicSelective\BiaisedGameScore.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Sources\Game\GameSet.cpp">
@@ -189,6 +207,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Sources\Artificial\HeuristicSelective\HeuristicSelectiveGameNode.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Sources\Artificial\HeuristicSelective\GameScore.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Sources\Artificial\HeuristicSelective\BiaisedGameScore.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

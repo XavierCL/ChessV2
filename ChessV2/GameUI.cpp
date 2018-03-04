@@ -24,6 +24,9 @@ GameUI::GameUI()
 	_legals = NULL;
 	_isWhiteBottom = true;
 	BitBoardMoveConstants::initialize();
+	Logger::registerInfo([](const std::string& message) {
+		OutputDebugStringA(message.c_str());
+	});
 }
 
 void GameUI::updateHandlers(const HWND &hwnd, const HINSTANCE &hinstance)
@@ -468,7 +471,7 @@ void GameUI::computerPlay()
 	{
 		if (_gameSet->isWhiteTurn())
 		{
-			Move const * move = BruteRecurseArtificial(3, _randomGenerator).getMove(*_gameSet);
+			Move const * move = BruteRecurseArtificial(5, _randomGenerator).getMove(*_gameSet);
 			GameSet* temp = new GameSet(_gameSet->playMove(*move));
 			delete _gameSet;
 			_gameSet = temp;

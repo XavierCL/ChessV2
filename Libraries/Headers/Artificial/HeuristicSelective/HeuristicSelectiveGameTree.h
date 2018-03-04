@@ -13,7 +13,6 @@ public:
 
 	~HeuristicSelectiveGameTree()
 	{
-		std::cout << "Ratio : " << 1 / averageRatio << "\n";
 		_root->remove();
 		delete _root;
 	}
@@ -45,8 +44,15 @@ public:
 		return _root->size();
 	}
 
+	HeuristicSelectiveGameNode* const root() const
+	{
+		return _root;
+	}
+
+	// DEBUG
 	double averageRatio = 0;
 	size_t averageCount = 0;
+	// END DEBUG
 
 private:
 	void updateNewRoot(const GameSet& gameSet)
@@ -54,25 +60,22 @@ private:
 		const Board& board = gameSet.currentBoard();
 		if (_root->gameSet().currentBoard() == board)
 		{
-			std::cout << "Starting!" << "\n\n";
 			_root->develop();
-			return;
 		}
 		else
 		{
 			_root->develop();
-			//cout << "Is white: " << _root->gameSet().isWhiteTurn() << "\n";
-			//cout << "Whole tree: " << _root->size() << "\n";
-			//cout << "Child count: " << _root->children().size() << "\n";
+
 			HeuristicSelectiveGameNode* newRoot(nullptr);
 			for (auto * child : _root->children())
 			{
 				if (child->gameSet().currentBoard() == board)
 				{
-					//cout << "Selected tree: " << child->size() << "\n";
-					//cout << "Relative size: " << (child->size() * _root->children().size()) / (double)_root->size() << "\n";
+					// DEBUG
 					averageRatio = (averageRatio * averageCount + (double)_root->size() / (child->size() * _root->children().size())) / (averageCount + 1);
 					++averageCount;
+					// END DEBUG
+
 					newRoot = child;
 				}
 				else
@@ -88,11 +91,8 @@ private:
 			delete _root;
 			_root = newRoot;
 			_root->setRoot(gameSet);
-			//cout << "Utility: " << _root->utility() << "\n\n";
 		}
 	}
-
-
 
 	Move const * const getMoveFromNodeAndNextBoard(const HeuristicSelectiveGameNode& currentNode, const Board& nextBoard)
 	{

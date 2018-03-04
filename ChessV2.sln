@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.27130.2024
+VisualStudioVersion = 15.0.27130.2036
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ChessV2", "ChessV2\ChessV2.vcxproj", "{40534270-0DAB-4381-BAAF-C897CCF41B42}"
 EndProject
@@ -9,7 +9,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Libraries", "Libraries\Libr
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TestLibraries", "TestLibraries\TestLibraries.vcxproj", "{53399CEE-BFA2-4434-98A3-9D49B885AA45}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ChassAITester", "ChassAITester\ChassAITester.vcxproj", "{05C3FF50-20E9-438D-BFA9-2895CDF19945}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ChessAITester", "ChessAITester\ChessAITester.vcxproj", "{1EF090B7-F064-4DA5-BB4D-77868DE6AC0F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -43,14 +43,14 @@ Global
 		{53399CEE-BFA2-4434-98A3-9D49B885AA45}.Release|Win32.Build.0 = Release|Win32
 		{53399CEE-BFA2-4434-98A3-9D49B885AA45}.Release|x64.ActiveCfg = Release|x64
 		{53399CEE-BFA2-4434-98A3-9D49B885AA45}.Release|x64.Build.0 = Release|x64
-		{05C3FF50-20E9-438D-BFA9-2895CDF19945}.Debug|Win32.ActiveCfg = Debug|Win32
-		{05C3FF50-20E9-438D-BFA9-2895CDF19945}.Debug|Win32.Build.0 = Debug|Win32
-		{05C3FF50-20E9-438D-BFA9-2895CDF19945}.Debug|x64.ActiveCfg = Debug|x64
-		{05C3FF50-20E9-438D-BFA9-2895CDF19945}.Debug|x64.Build.0 = Debug|x64
-		{05C3FF50-20E9-438D-BFA9-2895CDF19945}.Release|Win32.ActiveCfg = Release|Win32
-		{05C3FF50-20E9-438D-BFA9-2895CDF19945}.Release|Win32.Build.0 = Release|Win32
-		{05C3FF50-20E9-438D-BFA9-2895CDF19945}.Release|x64.ActiveCfg = Release|x64
-		{05C3FF50-20E9-438D-BFA9-2895CDF19945}.Release|x64.Build.0 = Release|x64
+		{1EF090B7-F064-4DA5-BB4D-77868DE6AC0F}.Debug|Win32.ActiveCfg = Debug|Win32
+		{1EF090B7-F064-4DA5-BB4D-77868DE6AC0F}.Debug|Win32.Build.0 = Debug|Win32
+		{1EF090B7-F064-4DA5-BB4D-77868DE6AC0F}.Debug|x64.ActiveCfg = Debug|x64
+		{1EF090B7-F064-4DA5-BB4D-77868DE6AC0F}.Debug|x64.Build.0 = Debug|x64
+		{1EF090B7-F064-4DA5-BB4D-77868DE6AC0F}.Release|Win32.ActiveCfg = Release|Win32
+		{1EF090B7-F064-4DA5-BB4D-77868DE6AC0F}.Release|Win32.Build.0 = Release|Win32
+		{1EF090B7-F064-4DA5-BB4D-77868DE6AC0F}.Release|x64.ActiveCfg = Release|x64
+		{1EF090B7-F064-4DA5-BB4D-77868DE6AC0F}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

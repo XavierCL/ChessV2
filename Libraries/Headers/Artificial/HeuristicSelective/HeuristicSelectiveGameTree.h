@@ -19,7 +19,7 @@ public:
 
 	Move const * const playMove()
 	{
-		HeuristicSelectiveGameNode const * const bestChild = _root->chosenOne();
+		HeuristicSelectiveGameNode const * const bestChild = _root->biaisedChosenOne();
 		auto const * const bestMove = getMoveFromNodeAndNextBoard(*_root, bestChild->gameSet().currentBoard());
 		updateNewRoot(_root->gameSet().rootGameSet().playMove(*bestMove));
 		return bestMove;
@@ -36,6 +36,8 @@ public:
 		while (!shouldStop() && !_root->isTerminal())
 		{
 			_root->develop();
+			_root->develop();
+			_root->develop();
 		}
 	}
 
@@ -48,11 +50,6 @@ public:
 	{
 		return _root;
 	}
-
-	// DEBUG
-	double averageRatio = 0;
-	size_t averageCount = 0;
-	// END DEBUG
 
 private:
 	void updateNewRoot(const GameSet& gameSet)
@@ -71,11 +68,6 @@ private:
 			{
 				if (child->gameSet().currentBoard() == board)
 				{
-					// DEBUG
-					averageRatio = (averageRatio * averageCount + (double)_root->size() / (child->size() * _root->children().size())) / (averageCount + 1);
-					++averageCount;
-					// END DEBUG
-
 					newRoot = child;
 				}
 				else

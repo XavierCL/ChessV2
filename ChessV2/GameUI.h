@@ -115,6 +115,7 @@ private:
 
 	GameSet* _gameSet;
 	Artificial* _artificial;
+	Artificial* _artificial2;
 	bool _isSinglePlayer;
 	bool _isComputerWhite;
 	bool _isComputerTurn;

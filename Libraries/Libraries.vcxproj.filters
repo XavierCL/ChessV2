@@ -215,5 +215,8 @@
     <ClCompile Include="Sources\Artificial\HeuristicSelective\BiaisedGameScore.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Sources\Artificial\HeuristicSelectiveNoDepth\HeuristicSelectiveGameNodeND.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

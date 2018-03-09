@@ -3,6 +3,7 @@
 #include "../Libraries/Headers/Moves/Factories/BitBoardMoveConstants.h"
 #include "../Libraries/Headers/Artificial/BruteRecurseArtificial.h"
 #include "../Libraries/Headers/Artificial/HeuristicSelective/HeuristicSelectiveArtificial.h"
+#include "../Libraries/Headers/Artificial/HeuristicSelectiveNoDepth/HeuristicSelectiveArtificialND.h"
 
 #include <ctime>
 
@@ -416,23 +417,24 @@ void GameUI::startNewGame()
 			_isWhiteBottom = !_isComputerWhite;
 		}
 		if (_artificial)delete _artificial;
+		if (_artificial2) delete _artificial2;
 		if (IsDlgButtonChecked(_hwnd, 8) == BST_CHECKED)
 		{
 			_artificial = new BruteRecurseArtificial(0, _randomGenerator);
 		}
 		else if (IsDlgButtonChecked(_hwnd, 9) == BST_CHECKED)
 		{
-			_artificial = new BruteRecurseArtificial(1, _randomGenerator);
+			_artificial = new BruteRecurseArtificial(3, _randomGenerator);
 		}
 		else if (IsDlgButtonChecked(_hwnd, 10) == BST_CHECKED)
 		{
-			_artificial = new BruteRecurseArtificial(2, _randomGenerator);
+			_artificial = new HeuristicSelectiveArtificial(1000, 1, 1000000000, _randomGenerator);
 		}
 		else
 		{
-			//_artificial = new BruteRecurseArtificial(5, _randomGenerator);
 			_artificial = new HeuristicSelectiveArtificial(10000, 1, 1000000000, _randomGenerator);
 		}
+		_artificial2 = new BruteRecurseArtificial(5, _randomGenerator);
 	}
 	else
 	{
@@ -471,7 +473,7 @@ void GameUI::computerPlay()
 	{
 		if (_gameSet->isWhiteTurn())
 		{
-			Move const * move = BruteRecurseArtificial(5, _randomGenerator).getMove(*_gameSet);
+			Move const * move = _artificial->getMove(*_gameSet);
 			GameSet* temp = new GameSet(_gameSet->playMove(*move));
 			delete _gameSet;
 			_gameSet = temp;
@@ -480,7 +482,7 @@ void GameUI::computerPlay()
 		}
 		else
 		{
-			Move const * move = _artificial->getMove(*_gameSet);
+			Move const * move = _artificial2->getMove(*_gameSet);
 			GameSet* temp = new GameSet(_gameSet->playMove(*move));
 			delete _gameSet;
 			_gameSet = temp;

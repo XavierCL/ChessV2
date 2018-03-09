@@ -75,6 +75,11 @@ public:
 		});
 	}
 
+	const bool operator==(const NodeGameSet& other)
+	{
+		return 
+	}
+
 private:
 
 	const static unsigned char ALLOWED_NON_CAPTURING_COUNT = 50;
@@ -91,13 +96,18 @@ private:
 		return _remainingNonCapturingCount == 0;
 	}
 
-	const bool isThreeFoldRepetitionDraw(const Board& board) const
+	const unsigned char gameCount(const Board& board) const
 	{
 		return _rootGameSet.map<unsigned char>([&board](const GameSet& gameSet) {
 			return gameSet.gameCount(board);
 		}).getOrElse([this, &board]() {
-			return (board == _currentBoard ? 1 : 0) + _parent->isThreeFoldRepetitionDraw(board);
-		}) > ALLOWED_REPETITIONS;
+			return (board == _currentBoard) + _parent->gameCount(board);
+		});
+	}
+
+	const bool isThreeFoldRepetitionDraw(const Board& board) const
+	{
+		return gameCount(board) > ALLOWED_REPETITIONS;
 	}
 
 	const Option<GameStatus> generateGameStatusNoMatterLegalMoves() const

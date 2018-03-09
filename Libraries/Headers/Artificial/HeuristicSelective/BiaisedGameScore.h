@@ -97,7 +97,8 @@ public:
 	{
 		return _boardScore == other._boardScore
 			&& _defasedBoardScore == other._defasedBoardScore
-			&& _depth == other._depth;
+			&& _depth == other._depth
+			&& _averageUtility == other._averageUtility;
 	}
 
 	const bool operator!=(const BiaisedGameScore &other) const

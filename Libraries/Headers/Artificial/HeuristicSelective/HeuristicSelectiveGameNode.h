@@ -98,6 +98,7 @@ public:
 		std::vector<HeuristicSelectiveGameNode*> chosens;
 		chosens.reserve(_children.size());
 		BiaisedGameScore bestBiaisedGameScore(_children[0]->_biaisedGameScore);
+		chosens.push_back(_children[0]);
 		if (_gameSet.isWhiteTurn())
 		{
 			for (size_t i = 1; i < _children.size(); ++i)
@@ -107,6 +108,7 @@ public:
 				{
 					chosens.clear();
 					chosens.push_back(child);
+					bestBiaisedGameScore = child->_biaisedGameScore;
 				}
 				else if (!child->_biaisedGameScore.biaisedBlackWinsOver(bestBiaisedGameScore))
 				{
@@ -123,6 +125,7 @@ public:
 				{
 					chosens.clear();
 					chosens.push_back(child);
+					bestBiaisedGameScore = child->_biaisedGameScore;
 				}
 				else if (!child->_biaisedGameScore.biaisedWhiteWinsOver(bestBiaisedGameScore))
 				{
@@ -168,9 +171,11 @@ private:
 	{
 		const GameScore previousGameScore = _gameScore;
 		const BiaisedGameScore previousBiaisedGameScore = _biaisedGameScore;
+		const bool previousIsTerminal = _isTerminal;
 		gatherChildrenUtility();
 		if (_gameScore != previousGameScore
-			|| _biaisedGameScore != previousBiaisedGameScore)
+			|| _biaisedGameScore != previousBiaisedGameScore
+			|| _isTerminal != previousIsTerminal)
 		{
 			for (auto* parent : _parents)
 			{
@@ -221,9 +226,9 @@ private:
 		if (gameSet.getStatus() == GameStatus::FIFTY_MOVE || gameSet.getStatus() == GameStatus::NO_LEGAL_MOVE || gameSet.getStatus() == GameStatus::THREEFOLD_REPETITION)
 			return 0;
 		else if (gameSet.getStatus() == GameStatus::WHITE_WIN)
-			return 0;
+			return 100;
 		else if (gameSet.getStatus() == GameStatus::BLACK_WIN)
-			return 0;
+			return -100;
 		else
 		{
 			double whiteScore = 0;
@@ -242,13 +247,12 @@ private:
 
 			const double score = (whiteScore / (blackScore + 1)) - (blackScore / (whiteScore + 1));
 
-			return 0;
+			return score;
 		}
 	}
 
 	void gatherChildrenUtility()
 	{
-		_isLeaf = false;
 		double averageUtility = _children[0]->_biaisedGameScore.averageUtility();
 		if (_gameSet.isWhiteTurn())
 		{
@@ -262,14 +266,14 @@ private:
 				BiaisedGameScore nodeBiaisedGameScore(node->_biaisedGameScore);
 
 				averageUtility += nodeBiaisedGameScore.averageUtility();
-				if (nodeGameScore.whiteWinsOver(_gameScore))
+				if (nodeGameScore == _gameScore)
+				{
+					_isTerminal = _isTerminal && node->_isTerminal;
+				}
+				else if (nodeGameScore.whiteWinsOver(_gameScore))
 				{
 					_isTerminal = node->_isTerminal;
 					_gameScore = nodeGameScore;
-				}
-				else if (!nodeGameScore.blackWinsOver(_gameScore))
-				{
-					_isTerminal = _isTerminal && node->_isTerminal;
 				}
 				if (nodeBiaisedGameScore.biaisedWhiteWinsOver(_biaisedGameScore))
 				{
@@ -289,22 +293,29 @@ private:
 				BiaisedGameScore nodeBiaisedGameScore(node->_biaisedGameScore);
 
 				averageUtility += nodeBiaisedGameScore.averageUtility();
-				if (nodeGameScore.blackWinsOver(_gameScore))
+				if (nodeGameScore == _gameScore)
+				{
+					_isTerminal = _isTerminal && node->_isTerminal;
+				}
+				else if (nodeGameScore.blackWinsOver(_gameScore))
 				{
 					_isTerminal = node->_isTerminal;
 					_gameScore = nodeGameScore;
 				}
-				else if (!nodeGameScore.whiteWinsOver(_gameScore))
-				{
-					_isTerminal = _isTerminal && node->_isTerminal;
-				}
 				if (nodeBiaisedGameScore.biaisedBlackWinsOver(_biaisedGameScore))
 				{
 					_biaisedGameScore = nodeBiaisedGameScore;
+					// somehow the game was terminal threefold,
+					// and its parent marked it as the gameScore,
+					// but the terminal state didn't backpropagate
 				}
 			}
 		}
-		_biaisedGameScore.averageUtility(averageUtility / _children.size());
+		if (_isLeaf)
+		{
+			_isLeaf = false;
+			_biaisedGameScore.averageUtility(averageUtility / _children.size());
+		}
 	}
 
 	NodeGameSet _gameSet;

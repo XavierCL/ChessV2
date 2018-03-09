@@ -191,6 +191,7 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Sources\Artificial\HeuristicSelectiveNoDepth\HeuristicSelectiveGameNodeND.cpp" />
     <ClCompile Include="Sources\Artificial\HeuristicSelective\BiaisedGameScore.cpp" />
     <ClCompile Include="Sources\Artificial\HeuristicSelective\GameScore.cpp" />
     <ClCompile Include="Sources\Artificial\HeuristicSelective\HeuristicSelectiveGameNode.cpp" />

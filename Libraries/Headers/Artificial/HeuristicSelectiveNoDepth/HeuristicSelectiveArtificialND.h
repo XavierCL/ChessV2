@@ -1,5 +1,5 @@
-#ifndef HEURISTIC_SELECTIVE_ARTIFICIAL_H
-#define HEURISTIC_SELECTIVE_ARTIFICIAL_H
+#ifndef HEURISTIC_SELECTIVE_ARTIFICIAL_ND_H
+#define HEURISTIC_SELECTIVE_ARTIFICIAL_ND_H
 
 #include "HeuristicSelectiveGameTreeND.h"
 
@@ -10,10 +10,10 @@
 #include <ctime>
 #include <string>
 
-class HeuristicSelectiveArtificial : public Artificial
+class HeuristicSelectiveArtificialND : public Artificial
 {
 public:
-	HeuristicSelectiveArtificial(const unsigned long long &msSelfTime, const unsigned char& threadCount, const size_t &maxNodeCount, std::minstd_rand0* generator)
+	HeuristicSelectiveArtificialND(const unsigned long long &msSelfTime, const unsigned char& threadCount, const size_t &maxNodeCount, std::minstd_rand0* generator)
 		: _msSelfTime(msSelfTime),
 		_threadCount(threadCount),
 		_maxNodeCount(maxNodeCount),

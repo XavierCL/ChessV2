@@ -51,7 +51,7 @@ public:
 						bestMoves.clear();
 						bestMoves.push_back((*gameSet.getLegals())[i]);
 					}
-					else if (minScore >= currentScore + ACCEPTED_RATIO)
+					else if (minScore >= currentScore - ACCEPTED_RATIO)
 					{
 						bestMoves.push_back((*gameSet.getLegals())[i]);
 					}
@@ -86,7 +86,7 @@ private:
 				double maxScore = revaluate(gameSet.playMove(*(*gameSet.getLegals())[0]), depth - 1, -1000);
 				average += maxScore;
 				size_t i = 1;
-				for (; i < gameSet.getLegals()->size() && lastBound >(maxScore + (average / i) * AVERAGE_RATIO) / (1 + AVERAGE_RATIO); ++i)
+				for (; i < gameSet.getLegals()->size() && lastBound > (maxScore + (average / i) * AVERAGE_RATIO) / (1 + AVERAGE_RATIO); ++i)
 				{
 					double currentScore = revaluate(gameSet.playMove(*(*gameSet.getLegals())[i]), depth - 1, maxScore);
 					average += currentScore;

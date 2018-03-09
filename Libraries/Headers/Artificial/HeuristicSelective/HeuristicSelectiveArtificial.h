@@ -58,8 +58,7 @@ private:
 
 	void printDebugInfo()
 	{
-		Logger::info("Average prediction: " + std::to_string(1 / (double)_gameTree.averageRatio) + "\n"
-			+ "Is white: " + std::to_string(_gameTree.root()->gameSet().isWhiteTurn()) + "\n"
+		Logger::info("Is white: " + std::to_string(_gameTree.root()->gameSet().isWhiteTurn()) + "\n"
 			+ "Whole tree: " + std::to_string(_gameTree.root()->size()) + "\n"
 			+ "Utility : " + std::to_string(_gameTree.root()->biaisedGameScore().utility()) + "\n\n");
 	}

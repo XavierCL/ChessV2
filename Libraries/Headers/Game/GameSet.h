@@ -133,7 +133,7 @@ private:
 
 	const bool isThreeFoldRepetitionDraw() const
 	{
-		return _history.at(_currentBoard) > ALLOWED_REPETITIONS;
+		return gameCount(_currentBoard) > ALLOWED_REPETITIONS;
 	}
 
 	const Option<GameStatus> generateGameStatusNoMatterLegalMoves() const

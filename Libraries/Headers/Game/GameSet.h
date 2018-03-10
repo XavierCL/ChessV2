@@ -36,14 +36,26 @@ public:
 	const GameSet playMove(const Move &move) const
 	{
 		const Board newBoard(move.play(_currentBoard));
-		std::unordered_map<Board, unsigned char, BoardHash> newHistory(_history);
-		newHistory[newBoard] = newHistory[newBoard] + 1;
 
-		return GameSet(
-			newBoard,
-			newHistory,
-			isFiftyMoveReset(_currentBoard, newBoard) ? ALLOWED_NON_CAPTURING_COUNT : _remainingNonCapturingCount - 1
-		);
+		if (canMoveBackToLastBoard(_currentBoard, newBoard))
+		{
+			std::unordered_map<Board, unsigned char, BoardHash> newHistory(_history);
+			newHistory[newBoard] = newHistory[newBoard] + 1;
+
+			return GameSet(
+				newBoard,
+				newHistory,
+				_remainingNonCapturingCount - 1
+			);
+		}
+		else
+		{
+			return GameSet(
+				newBoard,
+				std::unordered_map<Board, unsigned char, BoardHash>(),
+				ALLOWED_NON_CAPTURING_COUNT
+			);
+		}
 	}
 
 	const std::shared_ptr<std::vector<Move const *>> getLegals() const
@@ -69,25 +81,6 @@ public:
 	const Board currentBoard() const
 	{
 		return _currentBoard;
-	}
-
-	const size_t historyHash() const
-	{
-		size_t currentHash = 0;
-		size_t currentOddNumber = 5;
-		for (const auto historyCount : _history)
-		{
-			currentHash += historyCount.second * currentOddNumber;
-			currentOddNumber += 2;
-		}
-		return currentHash;
-	}
-
-	const size_t hash() const
-	{
-		return _currentBoard.hash()
-			+ CHAR_HASH(_remainingNonCapturingCount) * 3
-			+ SIZE_HASH(historyHash()) * 5;
 	}
 
 	const bool operator==(const GameSet& other) const
@@ -120,10 +113,10 @@ private:
 	const static unsigned char ALLOWED_NON_CAPTURING_COUNT = 50;
 	const static unsigned char ALLOWED_REPETITIONS = 2;
 
-	const bool isFiftyMoveReset(const Board& lastBoard, const Board& currentBoard) const
+	const bool canMoveBackToLastBoard(const Board& lastBoard, const Board& currentBoard) const
 	{
-		return !currentBoard.bitBoards().equalsSinglePieceType(PieceType::PAWN, lastBoard.bitBoards())
-			|| !currentBoard.bitBoards().pieceCountEquals(lastBoard.bitBoards());
+		return currentBoard.bitBoards().equalsSinglePieceType(PieceType::PAWN, lastBoard.bitBoards())
+			&& currentBoard.bitBoards().pieceCountEquals(lastBoard.bitBoards());
 	}
 
 	const bool isFiftyMoveDraw() const

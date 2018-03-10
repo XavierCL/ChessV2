@@ -32,7 +32,12 @@ public:
 
 	void set(const _KeyType& key, const _ValueType& value)
 	{
-		_container[_hasher(key) % _capacity] = Option<std::pair<_KeyType, _ValueType>>(std::make_pair(key, value));
+		const size_t keyIndex = _hasher(key) % _capacity;
+		if (_container[keyIndex].isEmpty())
+		{
+			++size;
+		}
+		_container[keyIndex] = Option<std::pair<_KeyType, _ValueType>>(std::make_pair(key, value));
 	}
 
 	void remove(const _KeyType& key)
@@ -42,8 +47,14 @@ public:
 			if (element.first == key)
 			{
 				_container[keyIndex] = Option<std::pair<_KeyType, _ValueType>>();
+				--_size;
 			}
 		});
+	}
+
+	const size_t size() const
+	{
+		return _size;
 	}
 
 	void clear()

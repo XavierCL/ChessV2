@@ -434,7 +434,7 @@ void GameUI::startNewGame()
 		{
 			_artificial = new HeuristicSelectiveArtificial(10000, 1, 1000000000, _randomGenerator);
 		}
-		_artificial2 = new BruteRecurseArtificial(5, _randomGenerator);
+		_artificial2 = new BruteRecurseArtificial(3, _randomGenerator);
 	}
 	else
 	{

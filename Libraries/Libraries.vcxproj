@@ -153,7 +153,6 @@
     <ClInclude Include="Headers\Exceptions\NoLegalMoveException.h" />
     <ClInclude Include="Headers\Boards\Board.h" />
     <ClInclude Include="Headers\Game\GameSet.h" />
-    <ClInclude Include="Headers\Game\GameSetHash.h" />
     <ClInclude Include="Headers\Game\GameStatus.h" />
     <ClInclude Include="Headers\Boards\BitBoard.h" />
     <ClInclude Include="Headers\Moves\Effectors\CaptureMove.h" />
@@ -206,6 +205,7 @@
     <ClCompile Include="Sources\Moves\Factories\BitBoardMoveConstants.cpp" />
     <ClCompile Include="Sources\Moves\Factories\MoveFactory.cpp" />
     <ClCompile Include="Sources\utils\FastMath.cpp" />
+    <ClCompile Include="Sources\utils\Logger.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

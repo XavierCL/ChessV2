@@ -75,11 +75,6 @@ public:
 		});
 	}
 
-	const bool operator==(const NodeGameSet& other)
-	{
-		return 
-	}
-
 private:
 
 	const static unsigned char ALLOWED_NON_CAPTURING_COUNT = 50;

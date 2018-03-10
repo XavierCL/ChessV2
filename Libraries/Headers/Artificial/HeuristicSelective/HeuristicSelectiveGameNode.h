@@ -1,6 +1,6 @@
 #pragma once
 
-#include "NodeGameSet.h"
+#include "../../Game/GameSet.h"
 #include "GameScore.h"
 #include "BiaisedGameScore.h"
 
@@ -11,7 +11,7 @@
 class HeuristicSelectiveGameNode
 {
 public:
-	HeuristicSelectiveGameNode(const NodeGameSet &gameSet, const GameScore &parentGameScore, const BiaisedGameScore &parentBiaisedGameScore)
+	HeuristicSelectiveGameNode(const GameSet &gameSet, const GameScore &parentGameScore, const BiaisedGameScore &parentBiaisedGameScore)
 		: _gameSet(gameSet),
 		_parents(),
 		_isLeaf(true),
@@ -42,10 +42,11 @@ public:
 
 	void remove()
 	{
-		//NODES.get(gameSet().currentBoard()).filter([this](HeuristicSelectiveGameNode * const foundNode) {
-		//	return this == foundNode;
-		//}).foreach([this](HeuristicSelectiveGameNode * const foundNode) {
-		//	NODES.remove(gameSet().currentBoard());
+		NODES.get(gameSet().currentBoard()).filter([this](HeuristicSelectiveGameNode * const foundNode) {
+			return this == foundNode;
+		}).foreach([this](HeuristicSelectiveGameNode * const foundNode) {
+			NODES.remove(gameSet().currentBoard());
+		});
 		for (auto * child : _children)
 		{
 			child->removeParent(this);
@@ -54,7 +55,6 @@ public:
 				delete child;
 			}
 		}
-		//});
 	}
 
 	const BiaisedGameScore biaisedGameScore() const
@@ -80,7 +80,6 @@ public:
 	void setRoot(const GameSet& gameSet)
 	{
 		_parents.resize(0);
-		_gameSet.setRoot(gameSet);
 	}
 
 	std::vector<HeuristicSelectiveGameNode*> children()
@@ -88,7 +87,7 @@ public:
 		return _children;
 	}
 
-	const NodeGameSet gameSet() const
+	const GameSet gameSet() const
 	{
 		return _gameSet;
 	}
@@ -196,32 +195,26 @@ private:
 	void developDepth1()
 	{
 		_children.reserve(_gameSet.getLegals()->size());
+		size_t addedSize = 0;
 		for (Move const * const move : *_gameSet.getLegals())
 		{
-			const NodeGameSet child(_gameSet.playMove(*move));
-			HeuristicSelectiveGameNode* childNode(new HeuristicSelectiveGameNode(child, _gameScore, _biaisedGameScore));/* NODES.get(child.currentBoard()).filter([&child](HeuristicSelectiveGameNode* const foundNode) {
-				if (foundNode->gameSet() == child)
-				{
-					std::cout << "\n\n Reused Node! \n\n";
-					return true;
-				}
-				else
-				{
-					return false;
-				}
+			const GameSet child(_gameSet.playMove(*move));
+			HeuristicSelectiveGameNode* childNode(NODES.get(child.currentBoard()).filter([&child](HeuristicSelectiveGameNode* const foundNode) {
+				return foundNode->gameSet() == child;
 			}).getOrElse([&child, this]() {
-				auto* node = new HeuristicSelectiveGameNode(child);
+				auto* node = new HeuristicSelectiveGameNode(child, _gameScore, _biaisedGameScore);
 				NODES.set(child.currentBoard(), node);
 				return node;
-			}));*/
+			}));
 			childNode->addParent(this);
 			_children.push_back(childNode);
+			addedSize += childNode->size();
 		}
-		backPropagateSize(_gameSet.getLegals()->size());
+		backPropagateSize(addedSize);
 		backPropagateUtility();
 	}
 
-	static const double estimateScore(const NodeGameSet &gameSet)
+	static const double estimateScore(const GameSet &gameSet)
 	{
 		if (gameSet.getStatus() == GameStatus::FIFTY_MOVE || gameSet.getStatus() == GameStatus::NO_LEGAL_MOVE || gameSet.getStatus() == GameStatus::THREEFOLD_REPETITION)
 			return 0;
@@ -305,9 +298,6 @@ private:
 				if (nodeBiaisedGameScore.biaisedBlackWinsOver(_biaisedGameScore))
 				{
 					_biaisedGameScore = nodeBiaisedGameScore;
-					// somehow the game was terminal threefold,
-					// and its parent marked it as the gameScore,
-					// but the terminal state didn't backpropagate
 				}
 			}
 		}
@@ -318,7 +308,7 @@ private:
 		}
 	}
 
-	NodeGameSet _gameSet;
+	GameSet _gameSet;
 	GameScore _gameScore;
 	BiaisedGameScore _biaisedGameScore;
 

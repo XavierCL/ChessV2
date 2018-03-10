@@ -8,7 +8,7 @@ class HeuristicSelectiveGameTree
 {
 public:
 	HeuristicSelectiveGameTree(const GameSet &gameSet)
-		: _root(new HeuristicSelectiveGameNode(NodeGameSet(gameSet), GameScore(), BiaisedGameScore()))
+		: _root(new HeuristicSelectiveGameNode(gameSet, GameScore(), BiaisedGameScore()))
 	{}
 
 	~HeuristicSelectiveGameTree()
@@ -21,7 +21,7 @@ public:
 	{
 		HeuristicSelectiveGameNode const * const bestChild = _root->biaisedChosenOne();
 		auto const * const bestMove = getMoveFromNodeAndNextBoard(*_root, bestChild->gameSet().currentBoard());
-		updateNewRoot(_root->gameSet().rootGameSet().playMove(*bestMove));
+		updateNewRoot(_root->gameSet().playMove(*bestMove));
 		return bestMove;
 	}
 

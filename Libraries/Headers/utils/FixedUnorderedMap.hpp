@@ -16,6 +16,11 @@ public:
 		_container(new Option<std::pair<_KeyType, _ValueType>>[_capacity])
 	{}
 
+	~FixedUnorderedMap()
+	{
+		delete[] _container;
+	}
+
 	const Option<_ValueType> get(const _KeyType& key) const
 	{
 		return _container[_hasher(key) % _capacity].flatMap<_ValueType>([&key](const std::pair<_KeyType, _ValueType>& element) {
@@ -35,7 +40,7 @@ public:
 		const size_t keyIndex = _hasher(key) % _capacity;
 		if (_container[keyIndex].isEmpty())
 		{
-			++size;
+			++_size;
 		}
 		_container[keyIndex] = Option<std::pair<_KeyType, _ValueType>>(std::make_pair(key, value));
 	}
@@ -65,14 +70,10 @@ public:
 		}
 	}
 
-	~FixedUnorderedMap()
-	{
-		delete[] _container;
-	}
-
 private:
 	const size_t _capacity;
-	Option<std::pair<_KeyType, _ValueType>>* const _container;
 	const _KeyHashType _hasher;
+
+	Option<std::pair<_KeyType, _ValueType>>* const _container;
 	size_t _size;
 };

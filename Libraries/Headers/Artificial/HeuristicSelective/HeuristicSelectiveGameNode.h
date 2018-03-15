@@ -21,6 +21,15 @@ public:
 		_biaisedGameScore(BiaisedGameScore(estimateScore(gameSet), parentBiaisedGameScore))
 	{}
 
+	~HeuristicSelectiveGameNode()
+	{
+		NODES.get(gameSet().currentBoard()).filter([this](HeuristicSelectiveGameNode * const foundNode) {
+			return this == foundNode;
+		}).foreach([this](HeuristicSelectiveGameNode * const foundNode) {
+			NODES.remove(gameSet().currentBoard());
+		});
+	}
+
 	void addParent(HeuristicSelectiveGameNode * const &parent)
 	{
 		_parents.push_back(parent);
@@ -42,11 +51,6 @@ public:
 
 	void remove()
 	{
-		NODES.get(gameSet().currentBoard()).filter([this](HeuristicSelectiveGameNode * const foundNode) {
-			return this == foundNode;
-		}).foreach([this](HeuristicSelectiveGameNode * const foundNode) {
-			NODES.remove(gameSet().currentBoard());
-		});
 		for (auto * child : _children)
 		{
 			child->removeParent(this);

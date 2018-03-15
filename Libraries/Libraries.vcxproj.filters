@@ -144,9 +144,6 @@
     <ClInclude Include="Headers\Artificial\HeuristicSelective\HeuristicSelectiveGameNode.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Headers\Artificial\HeuristicSelective\NodeGameSet.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Headers\utils\Logger.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>

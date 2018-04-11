@@ -60,7 +60,7 @@ private:
 	{
 		Logger::info("Is white: " + std::to_string(_gameTree.root()->gameSet().isWhiteTurn()) + "\n"
 			+ "Whole tree: " + std::to_string(_gameTree.root()->size()) + "\n"
-			+ "Utility : " + std::to_string(_gameTree.root()->biaisedGameScore().biaisedUtility()) + "\n\n");
+			+ "Utility : " + std::to_string(_gameTree.root()->gameScore().utility()) + "\n\n");
 	}
 };
 

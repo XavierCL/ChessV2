@@ -8,7 +8,7 @@ class HeuristicSelectiveGameTree
 {
 public:
 	HeuristicSelectiveGameTree(const GameSet &gameSet)
-		: _root(new HeuristicSelectiveGameNode(gameSet, GameScore(), BiaisedGameScore()))
+		: _root(new HeuristicSelectiveGameNode(gameSet, GameScore(gameSet)))
 	{}
 
 	~HeuristicSelectiveGameTree()

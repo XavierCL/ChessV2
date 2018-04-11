@@ -106,13 +106,13 @@ public:
 	}
 
 	template <typename _Type>
-	static const _Type max(const _Type& a, const _Type& b)
+	static const _Type fmax(const _Type& a, const _Type& b)
 	{
 		return b > a ? b : a;
 	}
 
 	template <typename _Type>
-	static const _Type min(const _Type& a, const _Type& b)
+	static const _Type fmin(const _Type& a, const _Type& b)
 	{
 		return b < a ? b : a;
 	}

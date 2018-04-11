@@ -2,6 +2,8 @@
 
 #include "../../Game/GameSet.h"
 
+#include <functional>
+
 class GameScore
 {
 public:
@@ -27,15 +29,15 @@ public:
 		_dephasedProbabilityScore = _dephasedScore;
 	}
 
-	template<typename _ContatinerType>
-	const size_t gatherChildren(const _ContainerType& gameScoreHolders)
+	template<typename _ContainerType>
+	const void gatherChildren(const _ContainerType& gameScoreHolders)
 	{
 		double probabilitySum = gameScoreHolders[0]->gameScore()._score;
 		size_t scoreIndex = 0;
-		auto firstScoreWin = [](const GameScore& first, const GameScore& second) {
+		std::function<bool(const GameScore&, const GameScore&)> firstScoreWin = [](const GameScore& first, const GameScore& second) {
 			return first.whiteWinsOver(second);
 		};
-		auto firstProbabilityWin = [](const GameScore& first, const double& firstProbability, const GameScore& second, const double& secondProbability) {
+		std::function<bool(const GameScore&, const double&, const GameScore&, const double&)> firstProbabilityWin = [](const GameScore& first, const double& firstProbability, const GameScore& second, const double& secondProbability) {
 			return first.betterWhiteProbability(firstProbability, secondProbability, second);
 		};
 		if (_depth % 2 == 0)
@@ -51,7 +53,7 @@ public:
 		size_t relativeProbabilityIndex;
 		for (relativeProbabilityIndex = 0; relativeProbabilityIndex < gameScoreHolders.size(); ++relativeProbabilityIndex)
 		{
-			if (!gameScoreHolders[relativeProbabilityIndex]._terminalProbability)
+			if (!gameScoreHolders[relativeProbabilityIndex]->gameScore()._probabilityTerminal)
 			{
 				break;
 			}
@@ -71,27 +73,27 @@ public:
 
 		for (size_t gameScoreCounter = 1; gameScoreCounter < gameScoreHolders.size(); ++gameScoreCounter)
 		{
-			if (!gameScoreHolders[i]->gameScore()._probabilityTerminal)
+			if (!gameScoreHolders[gameScoreCounter]->gameScore()._probabilityTerminal)
 			{
 				double currentProbability = _depth % 2 == 1
-					? (gameScoreHolders[i]->gameScore()._score + 1) / 2
-					: (-gameScoreHolders[i]->gameScore()._score + 1) / 2;
-				double currentRelativeProbability = currentProbability * gameScoreHolders[i]->gameScore()._relativeProbability;
-				if (firstProbabilityWin(gameScoreHolders[i]->gameScore(), currentRelativeProbability, gameScoreHolders[relativeProbabilityIndex]->gameScore(), _relativeProbability)
+					? (gameScoreHolders[gameScoreCounter]->gameScore()._score + 1) / 2
+					: (-gameScoreHolders[gameScoreCounter]->gameScore()._score + 1) / 2;
+				double currentRelativeProbability = currentProbability * gameScoreHolders[gameScoreCounter]->gameScore()._relativeProbability;
+				if (firstProbabilityWin(gameScoreHolders[gameScoreCounter]->gameScore(), currentRelativeProbability, gameScoreHolders[relativeProbabilityIndex]->gameScore(), _relativeProbability))
 				{
-					relativeProbabilityIndex = i;
+					relativeProbabilityIndex = gameScoreCounter;
 					_relativeProbability = currentRelativeProbability;
-					_dephasedProbabilityScore = gameScoreHolders[i]->gameScore()._dephasedProbabilityScore;
+					_dephasedProbabilityScore = gameScoreHolders[gameScoreCounter]->gameScore()._dephasedProbabilityScore;
 				}
 				probabilitySum += currentProbability;
 			}
-			if (firstScoreWin(gameScoreHolders[i]->gameScore(), gameScoreHolders[scoreIndex]->gameScore()))
+			if (firstScoreWin(gameScoreHolders[gameScoreCounter]->gameScore(), gameScoreHolders[scoreIndex]->gameScore()))
 			{
-				_score = gameScoreHolders[i]->gameScore()._score;
-				_dephasedScore = gameScoreHolders[i]->gameScore()._dephasedScore;
-				scoreIndex = i;
+				_score = gameScoreHolders[gameScoreCounter]->gameScore()._score;
+				_dephasedScore = gameScoreHolders[gameScoreCounter]->gameScore()._dephasedScore;
+				scoreIndex = gameScoreCounter;
 			}
-			_averageScore += gameScoreHolders[i]->gameScore()._averageScore;
+			_averageScore += gameScoreHolders[gameScoreCounter]->gameScore()._averageScore;
 		}
 		_averageScore /= gameScoreHolders.size();
 		if (relativeProbabilityIndex < gameScoreHolders.size())
@@ -120,7 +122,7 @@ public:
 
 	const double utility() const
 	{
-		(_score + _averageScore * AVERAGE_RATIO) / (1 + AVERAGE_RATIO);
+		return (_score + _averageScore * AVERAGE_RATIO) / (1 + AVERAGE_RATIO);
 	}
 
 private:

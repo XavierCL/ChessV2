@@ -1,5 +1,7 @@
 #pragma once
 
+#include <cmath>
+
 class FastMath
 {
 public:
@@ -101,5 +103,21 @@ public:
 	static void pushAllPointer(_ContainerType& a, const _ContainerType& b)
 	{
 		a->insert(a->end(), b->cbegin(), b->cend());
+	}
+
+	template <typename _Type>
+	static const _Type max(const _Type& a, const _Type& b)
+	{
+		return b > a ? b : a;
+	}
+
+	template <typename _Type>
+	static const _Type min(const _Type& a, const _Type& b)
+	{
+		return b < a ? b : a;
+	}
+
+	static const double sigmoid(const double& x) {
+		return x / (1 + std::abs(x));
 	}
 };

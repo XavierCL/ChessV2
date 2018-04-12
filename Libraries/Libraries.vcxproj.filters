@@ -150,6 +150,21 @@
     <ClInclude Include="Headers\Artificial\HeuristicSelectiveNoDepth\NodeGameSetND.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Headers\Artificial\HeuristicSelective\BiaisedGameScore.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Headers\Artificial\ProbabilityHeuristicSelective\ProbabilityHeuristicSelectiveArtificial.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Headers\Artificial\ProbabilityHeuristicSelective\ProbabilityHeuristicSelectiveGameNode.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Headers\Artificial\ProbabilityHeuristicSelective\ProbabilityHeuristicSelectiveGameTree.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Headers\Artificial\ProbabilityHeuristicSelective\ProbabilityGameScore.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Sources\Game\GameSet.cpp">

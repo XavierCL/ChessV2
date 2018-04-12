@@ -227,10 +227,10 @@
     <ClCompile Include="Sources\Artificial\HeuristicSelective\HeuristicSelectiveGameNode.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Sources\Artificial\ProbabilityHeuristicSelective\GameScore.cpp">
+    <ClCompile Include="Sources\Artificial\ProbabilityHeuristicSelective\ProbabilityHeuristicSelectiveGameNode.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Sources\Artificial\ProbabilityHeuristicSelective\ProbabilityHeuristicSelectiveGameNode.cpp">
+    <ClCompile Include="Sources\Artificial\ProbabilityHeuristicSelective\ProbabilityGameScore.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

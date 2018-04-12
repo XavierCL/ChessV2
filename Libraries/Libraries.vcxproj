@@ -194,6 +194,11 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Sources\Artificial\HeuristicSelectiveNoDepth\HeuristicSelectiveGameNodeND.cpp" />
+    <ClCompile Include="Sources\Artificial\HeuristicSelective\BiaisedGameScore.cpp" />
+    <ClCompile Include="Sources\Artificial\HeuristicSelective\GameScore.cpp" />
+    <ClCompile Include="Sources\Artificial\HeuristicSelective\HeuristicSelectiveGameNode.cpp" />
+    <ClCompile Include="Sources\Artificial\ProbabilityHeuristicSelective\GameScore.cpp" />
+    <ClCompile Include="Sources\Artificial\ProbabilityHeuristicSelective\ProbabilityHeuristicSelectiveGameNode.cpp" />
     <ClCompile Include="Sources\Boards\BitBoardRayConstants.cpp" />
     <ClCompile Include="Sources\Boards\BitBoards.cpp" />
     <ClCompile Include="Sources\Boards\Board.cpp" />

@@ -141,7 +141,6 @@ public:
 	HeuristicSelectiveGameNode * const chosenOne() const
 	{
 		std::vector<HeuristicSelectiveGameNode*> chosens;
-		chosens.push_back(_children[0]);
 		size_t childCounter;
 		for (childCounter = 0; childCounter < _children.size(); ++childCounter)
 		{

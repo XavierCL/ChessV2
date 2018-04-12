@@ -15,6 +15,7 @@ public:
 		_dephasedProbabilityScore(0),
 		_probabilityTerminal(gameSet.getStatus() != GameStatus::LIVE)
 	{
+		_probability = computeProbability();
 		_averageScore = _score;
 	}
 
@@ -25,6 +26,7 @@ public:
 		_relativeProbability(1),
 		_probabilityTerminal(gameSet.getStatus() != GameStatus::LIVE)
 	{
+		_probability = computeProbability();
 		_averageScore = _score;
 		_dephasedProbabilityScore = _dephasedScore;
 	}
@@ -61,7 +63,7 @@ public:
 
 		if (relativeProbabilityIndex < gameScoreHolders.size())
 		{
-			_relativeProbability = gameScoreHolders[relativeProbabilityIndex]->gameScore().probability();
+			_relativeProbability = gameScoreHolders[relativeProbabilityIndex]->gameScore()._probability;
 			_dephasedProbabilityScore = gameScoreHolders[relativeProbabilityIndex]->gameScore()._dephasedProbabilityScore;
 		}
 		_score = gameScoreHolders[0]->gameScore()._score;
@@ -72,7 +74,7 @@ public:
 		{
 			if (!gameScoreHolders[gameScoreCounter]->gameScore()._probabilityTerminal)
 			{
-				double currentRelativeProbability = gameScoreHolders[gameScoreCounter]->gameScore().probability();
+				double currentRelativeProbability = gameScoreHolders[gameScoreCounter]->gameScore()._probability;
 				if (firstProbabilityWin(gameScoreHolders[gameScoreCounter]->gameScore(), gameScoreHolders[relativeProbabilityIndex]->gameScore()))
 				{
 					relativeProbabilityIndex = gameScoreCounter;
@@ -99,14 +101,13 @@ public:
 		{
 			_probabilityTerminal = true;
 		}
+		_probability = computeProbability();
 	}
 
 	const bool isSameScore(const GameScore& other) const
 	{
-		return _score == other._score
-			&& _averageScore == other._averageScore
-			&& _relativeProbability == other._relativeProbability
-			&& _depth == other._depth
+		return _averageScore == other._averageScore
+			&& _probability == other._probability
 			&& _dephasedScore == other._dephasedScore
 			&& _dephasedProbabilityScore == other._dephasedProbabilityScore
 			&& _probabilityTerminal == other._probabilityTerminal;
@@ -124,13 +125,11 @@ public:
 
 	const bool betterWhiteProbability(const GameScore& other) const
 	{
-		const double thisProbability = probability();
-		const double otherProbability = other.probability();
-		if (thisProbability > otherProbability)
+		if (_probability > other._probability)
 		{
 			return true;
 		}
-		else if (thisProbability < otherProbability)
+		else if (_probability < other._probability)
 		{
 			return false;
 		}
@@ -153,13 +152,11 @@ public:
 
 	const bool betterBlackProbability(const GameScore& other) const
 	{
-		const double thisProbability = probability();
-		const double otherProbability = other.probability();
-		if (thisProbability> otherProbability)
+		if (_probability > other._probability)
 		{
 			return true;
 		}
-		else if (thisProbability < otherProbability)
+		else if (_probability < other._probability)
 		{
 			return false;
 		}
@@ -285,12 +282,13 @@ private:
 	double _score;
 	double _averageScore;
 	double _relativeProbability;
+	double _probability;
 	size_t _depth;
 	int _dephasedScore;
 	int _dephasedProbabilityScore;
 	bool _probabilityTerminal;
 
-	const double probability() const
+	const double computeProbability() const
 	{
 		const double normalizedScore = _depth % 2 == 1
 			? (_score + 1) / 2

@@ -90,7 +90,7 @@ public:
 			_averageScore += gameScoreHolders[gameScoreCounter]->gameScore()._averageScore;
 		}
 		_averageScore /= gameScoreHolders.size();
-		if (probabilitySum == 0)
+		if (probabilitySum > 0)
 		{
 			_relativeProbability /= probabilitySum;
 			_probabilityTerminal = false;

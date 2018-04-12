@@ -10,6 +10,15 @@
 class HeuristicSelectiveGameNode
 {
 public:
+
+	HeuristicSelectiveGameNode(const GameSet &gameSet)
+		: _gameSet(gameSet),
+		_parents(),
+		_isLeaf(true),
+		_size(1),
+		_gameScore(gameSet)
+	{}
+
 	HeuristicSelectiveGameNode(const GameSet &gameSet, const GameScore &parentGameScore)
 		: _gameSet(gameSet),
 		_parents(),

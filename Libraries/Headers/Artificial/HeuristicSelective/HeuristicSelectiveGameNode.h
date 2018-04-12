@@ -14,7 +14,6 @@ public:
 		: _gameSet(gameSet),
 		_parents(),
 		_isLeaf(true),
-		_isTerminal(gameSet.getStatus() != GameStatus::LIVE),
 		_size(1),
 		_gameScore(gameSet, parentGameScore)
 	{}
@@ -61,7 +60,7 @@ public:
 
 	void develop()
 	{
-		if (!_isTerminal)
+		if (!isTerminal())
 		{
 			if (!_isLeaf)
 			{
@@ -93,12 +92,37 @@ public:
 	{
 		std::vector<HeuristicSelectiveGameNode*> chosens;
 		chosens.reserve(_children.size());
-		for (size_t i = 1; i < _children.size(); ++i)
+		chosens.push_back(_children[0]);
+		if (_gameSet.isWhiteTurn())
 		{
-			auto* const child = _children[i];
-			if (child->gameScore().hasSameBiaisedScore(_gameScore))
+			for (size_t childCounter = 1; childCounter < _children.size(); ++childCounter)
 			{
-				chosens.push_back(child);
+				auto* const child = _children[childCounter];
+				if (child->gameScore().whiteWinsOver(chosens[0]->gameScore()))
+				{
+					chosens.resize(1);
+					chosens[0] = child;
+				}
+				else if (!child->gameScore().blackWinsOver(chosens[0]->gameScore()))
+				{
+					chosens.push_back(child);
+				}
+			}
+		}
+		else
+		{
+			for (size_t childCounter = 1; childCounter < _children.size(); ++childCounter)
+			{
+				auto* const child = _children[childCounter];
+				if (child->gameScore().blackWinsOver(chosens[0]->gameScore()))
+				{
+					chosens.resize(1);
+					chosens[0] = child;
+				}
+				else if (!child->gameScore().whiteWinsOver(chosens[0]->gameScore()))
+				{
+					chosens.push_back(child);
+				}
 			}
 		}
 		std::uniform_int_distribution<int> aDistributor(0, chosens.size() - 1);
@@ -108,12 +132,53 @@ public:
 	HeuristicSelectiveGameNode * const chosenOne() const
 	{
 		std::vector<HeuristicSelectiveGameNode*> chosens;
-		chosens.reserve(_children.size());
-		for (auto* const child : _children)
+		chosens.push_back(_children[0]);
+		size_t childCounter;
+		for (childCounter = 0; childCounter < _children.size(); ++childCounter)
 		{
-			if (_gameScore.hasSameProbability(child->gameScore()) && !child->isTerminal())
+			if (!_children[childCounter]->isTerminal())
 			{
-				chosens.push_back(child);
+				break;
+			}
+		}
+		chosens.reserve(_children.size() - childCounter);
+		chosens.push_back(_children[childCounter]);
+		if (_gameSet.isWhiteTurn())
+		{
+			for (; childCounter < _children.size(); ++childCounter)
+			{
+				auto* child = _children[childCounter];
+				if (!child->isTerminal())
+				{
+					if(child->gameScore().betterWhiteProbability(chosens[0]->gameScore()))
+					{
+						chosens.resize(1);
+						chosens[0] = child;
+					}
+					else if (!child->gameScore().betterBlackProbability(chosens[0]->gameScore()))
+					{
+						chosens.push_back(child);
+					}
+				}
+			}
+		}
+		else
+		{
+			for (; childCounter < _children.size(); ++childCounter)
+			{
+				auto* child = _children[childCounter];
+				if (!child->isTerminal())
+				{
+					if (child->gameScore().betterBlackProbability(chosens[0]->gameScore()))
+					{
+						chosens.resize(1);
+						chosens[0] = child;
+					}
+					else if (!child->gameScore().betterWhiteProbability(chosens[0]->gameScore()))
+					{
+						chosens.push_back(child);
+					}
+				}
 			}
 		}
 		std::uniform_int_distribution<int> aDistributor(0, chosens.size() - 1);
@@ -122,7 +187,7 @@ public:
 
 	const bool isTerminal() const
 	{
-		return _isTerminal;
+		return _gameScore.terminal();
 	}
 
 	const size_t size() const
@@ -143,11 +208,8 @@ private:
 	void backPropagateUtility()
 	{
 		const GameScore previousGameScore = _gameScore;
-		const bool previousIsTerminal = _isTerminal;
 		gatherChildrenUtility();
-		if (!_gameScore.hasSameBiaisedScore(previousGameScore)
-			|| !_gameScore.hasSameProbability(previousGameScore)
-			|| _isTerminal != previousIsTerminal)
+		if (!_gameScore.isSameScore(previousGameScore))
 		{
 			for (auto* parent : _parents)
 			{
@@ -197,7 +259,6 @@ private:
 	GameScore _gameScore;
 
 	bool _isLeaf;
-	bool _isTerminal;
 	size_t _size;
 	std::vector<HeuristicSelectiveGameNode*> _parents;
 	std::vector<HeuristicSelectiveGameNode*> _children;

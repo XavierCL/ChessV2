@@ -37,16 +37,16 @@ public:
 		std::function<bool(const GameScore&, const GameScore&)> firstScoreWin = [](const GameScore& first, const GameScore& second) {
 			return first.whiteWinsOver(second);
 		};
-		std::function<bool(const GameScore&, const double&, const GameScore&, const double&)> firstProbabilityWin = [](const GameScore& first, const double& firstProbability, const GameScore& second, const double& secondProbability) {
-			return first.betterWhiteProbability(firstProbability, secondProbability, second);
+		std::function<bool(const GameScore&, const GameScore&)> firstProbabilityWin = [](const GameScore& first, const GameScore& second) {
+			return first.betterWhiteProbability(second);
 		};
 		if (_depth % 2 == 0)
 		{
 			firstScoreWin = [](const GameScore& first, const GameScore& second) {
 				return first.blackWinsOver(second);
 			};
-			firstProbabilityWin = [](const GameScore& first, const double& firstProbability, const GameScore& second, const double& secondProbability) {
-				return first.betterBlackProbability(firstProbability, secondProbability, second);
+			firstProbabilityWin = [](const GameScore& first, const GameScore& second) {
+				return first.betterBlackProbability(second);
 			};
 		}
 
@@ -61,10 +61,7 @@ public:
 
 		if (relativeProbabilityIndex < gameScoreHolders.size())
 		{
-			double currentProbability = _depth % 2 == 1
-				? (gameScoreHolders[relativeProbabilityIndex]->gameScore()._score + 1) / 2
-				: (-gameScoreHolders[relativeProbabilityIndex]->gameScore()._score + 1) / 2;
-			_relativeProbability = currentProbability * gameScoreHolders[relativeProbabilityIndex]->gameScore()._relativeProbability;
+			_relativeProbability = gameScoreHolders[relativeProbabilityIndex]->gameScore().probability();
 			_dephasedProbabilityScore = gameScoreHolders[relativeProbabilityIndex]->gameScore()._dephasedProbabilityScore;
 		}
 		_score = gameScoreHolders[0]->gameScore()._score;
@@ -75,17 +72,14 @@ public:
 		{
 			if (!gameScoreHolders[gameScoreCounter]->gameScore()._probabilityTerminal)
 			{
-				double currentProbability = _depth % 2 == 1
-					? (gameScoreHolders[gameScoreCounter]->gameScore()._score + 1) / 2
-					: (-gameScoreHolders[gameScoreCounter]->gameScore()._score + 1) / 2;
-				double currentRelativeProbability = currentProbability * gameScoreHolders[gameScoreCounter]->gameScore()._relativeProbability;
-				if (firstProbabilityWin(gameScoreHolders[gameScoreCounter]->gameScore(), currentRelativeProbability, gameScoreHolders[relativeProbabilityIndex]->gameScore(), _relativeProbability))
+				double currentRelativeProbability = gameScoreHolders[gameScoreCounter]->gameScore().probability();
+				if (firstProbabilityWin(gameScoreHolders[gameScoreCounter]->gameScore(), gameScoreHolders[relativeProbabilityIndex]->gameScore()))
 				{
 					relativeProbabilityIndex = gameScoreCounter;
 					_relativeProbability = currentRelativeProbability;
 					_dephasedProbabilityScore = gameScoreHolders[gameScoreCounter]->gameScore()._dephasedProbabilityScore;
 				}
-				probabilitySum += currentProbability;
+				probabilitySum += currentRelativeProbability;
 			}
 			if (firstScoreWin(gameScoreHolders[gameScoreCounter]->gameScore(), gameScoreHolders[scoreIndex]->gameScore()))
 			{
@@ -96,7 +90,7 @@ public:
 			_averageScore += gameScoreHolders[gameScoreCounter]->gameScore()._averageScore;
 		}
 		_averageScore /= gameScoreHolders.size();
-		if (relativeProbabilityIndex < gameScoreHolders.size())
+		if (probabilitySum == 0)
 		{
 			_relativeProbability /= probabilitySum;
 			_probabilityTerminal = false;
@@ -107,17 +101,15 @@ public:
 		}
 	}
 
-	const bool hasSameProbability(const GameScore& other) const
-	{
-		return _relativeProbability == other._relativeProbability
-			&& _dephasedProbabilityScore == other._dephasedProbabilityScore;
-	}
-
-	const bool hasSameBiaisedScore(const GameScore& other) const
+	const bool isSameScore(const GameScore& other) const
 	{
 		return _score == other._score
+			&& _averageScore == other._averageScore
+			&& _relativeProbability == other._relativeProbability
+			&& _depth == other._depth
 			&& _dephasedScore == other._dephasedScore
-			&& _averageScore == other._averageScore;
+			&& _dephasedProbabilityScore == other._dephasedProbabilityScore
+			&& _probabilityTerminal == other._probabilityTerminal;
 	}
 
 	const double utility() const
@@ -125,55 +117,20 @@ public:
 		return (_score + _averageScore * AVERAGE_RATIO) / (1 + AVERAGE_RATIO);
 	}
 
-private:
-
-	static const double getScore(const GameSet& gameSet)
+	const bool terminal() const
 	{
-		if (gameSet.getStatus() == GameStatus::FIFTY_MOVE || gameSet.getStatus() == GameStatus::NO_LEGAL_MOVE || gameSet.getStatus() == GameStatus::THREEFOLD_REPETITION)
-			return 0;
-		else if (gameSet.getStatus() == GameStatus::WHITE_WIN)
-			return 1;
-		else if (gameSet.getStatus() == GameStatus::BLACK_WIN)
-			return -1;
-		else
-		{
-			double whiteScore = 0;
-			whiteScore += 1 * (double)gameSet.currentBoard().bitBoards().populationCount(PieceType::PAWN, true);
-			whiteScore += 3 * (double)gameSet.currentBoard().bitBoards().populationCount(PieceType::KNIGHT, true);
-			whiteScore += 3 * (double)gameSet.currentBoard().bitBoards().populationCount(PieceType::BISHOP, true);
-			whiteScore += 5 * (double)gameSet.currentBoard().bitBoards().populationCount(PieceType::ROOK, true);
-			whiteScore += 9 * (double)gameSet.currentBoard().bitBoards().populationCount(PieceType::QUEEN, true);
-
-			double blackScore = 0;
-			blackScore += 1 * (double)gameSet.currentBoard().bitBoards().populationCount(PieceType::PAWN, false);
-			blackScore += 3 * (double)gameSet.currentBoard().bitBoards().populationCount(PieceType::KNIGHT, false);
-			blackScore += 3 * (double)gameSet.currentBoard().bitBoards().populationCount(PieceType::BISHOP, false);
-			blackScore += 5 * (double)gameSet.currentBoard().bitBoards().populationCount(PieceType::ROOK, false);
-			blackScore += 9 * (double)gameSet.currentBoard().bitBoards().populationCount(PieceType::QUEEN, false);
-
-			const double score = (whiteScore / (blackScore + 1)) - (blackScore / (whiteScore + 1));
-
-			return FastMath::sigmoid(score);
-		}
+		return _probabilityTerminal;
 	}
 
-	static const double AVERAGE_RATIO;
-
-	double _score;
-	double _averageScore;
-	double _relativeProbability;
-	size_t _depth;
-	int _dephasedScore;
-	int _dephasedProbabilityScore;
-	bool _probabilityTerminal;
-
-	const bool betterWhiteProbability(const double& thisRelativeProbability, const double& otherRelativeProbability, const GameScore& other) const
+	const bool betterWhiteProbability(const GameScore& other) const
 	{
-		if (thisRelativeProbability > otherRelativeProbability)
+		const double thisProbability = probability();
+		const double otherProbability = other.probability();
+		if (thisProbability > otherProbability)
 		{
 			return true;
 		}
-		else if (thisRelativeProbability < otherRelativeProbability)
+		else if (thisProbability < otherProbability)
 		{
 			return false;
 		}
@@ -194,13 +151,15 @@ private:
 		}
 	}
 
-	const bool betterBlackProbability(const double& thisRelativeProbability, const double& otherRelativeProbability, const GameScore& other) const
+	const bool betterBlackProbability(const GameScore& other) const
 	{
-		if (thisRelativeProbability > otherRelativeProbability)
+		const double thisProbability = probability();
+		const double otherProbability = other.probability();
+		if (thisProbability> otherProbability)
 		{
 			return true;
 		}
-		else if (thisRelativeProbability < otherRelativeProbability)
+		else if (thisProbability < otherProbability)
 		{
 			return false;
 		}
@@ -287,5 +246,55 @@ private:
 				}
 			}
 		}
+	}
+
+private:
+
+	static const double getScore(const GameSet& gameSet)
+	{
+		if (gameSet.getStatus() == GameStatus::FIFTY_MOVE || gameSet.getStatus() == GameStatus::NO_LEGAL_MOVE || gameSet.getStatus() == GameStatus::THREEFOLD_REPETITION)
+			return 0;
+		else if (gameSet.getStatus() == GameStatus::WHITE_WIN)
+			return 1;
+		else if (gameSet.getStatus() == GameStatus::BLACK_WIN)
+			return -1;
+		else
+		{
+			double whiteScore = 0;
+			whiteScore += 1 * (double)gameSet.currentBoard().bitBoards().populationCount(PieceType::PAWN, true);
+			whiteScore += 3 * (double)gameSet.currentBoard().bitBoards().populationCount(PieceType::KNIGHT, true);
+			whiteScore += 3 * (double)gameSet.currentBoard().bitBoards().populationCount(PieceType::BISHOP, true);
+			whiteScore += 5 * (double)gameSet.currentBoard().bitBoards().populationCount(PieceType::ROOK, true);
+			whiteScore += 9 * (double)gameSet.currentBoard().bitBoards().populationCount(PieceType::QUEEN, true);
+
+			double blackScore = 0;
+			blackScore += 1 * (double)gameSet.currentBoard().bitBoards().populationCount(PieceType::PAWN, false);
+			blackScore += 3 * (double)gameSet.currentBoard().bitBoards().populationCount(PieceType::KNIGHT, false);
+			blackScore += 3 * (double)gameSet.currentBoard().bitBoards().populationCount(PieceType::BISHOP, false);
+			blackScore += 5 * (double)gameSet.currentBoard().bitBoards().populationCount(PieceType::ROOK, false);
+			blackScore += 9 * (double)gameSet.currentBoard().bitBoards().populationCount(PieceType::QUEEN, false);
+
+			const double score = (whiteScore / (blackScore + 1)) - (blackScore / (whiteScore + 1));
+
+			return FastMath::sigmoid(score);
+		}
+	}
+
+	static const double AVERAGE_RATIO;
+
+	double _score;
+	double _averageScore;
+	double _relativeProbability;
+	size_t _depth;
+	int _dephasedScore;
+	int _dephasedProbabilityScore;
+	bool _probabilityTerminal;
+
+	const double probability() const
+	{
+		const double normalizedScore = _depth % 2 == 1
+			? (_score + 1) / 2
+			: (-_score + 1) / 2;
+		return _relativeProbability * normalizedScore;
 	}
 };

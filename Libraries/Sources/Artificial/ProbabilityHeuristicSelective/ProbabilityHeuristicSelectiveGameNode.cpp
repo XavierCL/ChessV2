@@ -1,4 +1,4 @@
-#include "../../../Headers/Artificial/HeuristicSelective/HeuristicSelectiveGameNode.h"
+#include "../../../Headers/Artificial/ProbabilityHeuristicSelective/ProbabilityHeuristicSelectiveGameNode.h"
 
-std::minstd_rand0* HeuristicSelectiveGameNode::GENERATOR = nullptr;
-FixedUnorderedMap<Board, HeuristicSelectiveGameNode*, BoardHash> HeuristicSelectiveGameNode::NODES(1000000);
+std::minstd_rand0* ProbabilityHeuristicSelectiveGameNode::GENERATOR = nullptr;
+FixedUnorderedMap<Board, ProbabilityHeuristicSelectiveGameNode*, BoardHash> ProbabilityHeuristicSelectiveGameNode::NODES(1000000);

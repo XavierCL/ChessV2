@@ -4,6 +4,7 @@
 #include "../Libraries/Headers/Artificial/BruteRecurseArtificial.h"
 #include "../Libraries/Headers/Artificial/HeuristicSelective/HeuristicSelectiveArtificial.h"
 #include "../Libraries/Headers/Artificial/HeuristicSelectiveNoDepth/HeuristicSelectiveArtificialND.h"
+#include "../Libraries/Headers/Artificial/ProbabilityHeuristicSelective/ProbabilityHeuristicSelectiveArtificial.h"
 
 #include <ctime>
 
@@ -432,9 +433,9 @@ void GameUI::startNewGame()
 		}
 		else
 		{
-			_artificial = new HeuristicSelectiveArtificial(10000, 1, 1000000000, _randomGenerator);
+			_artificial = new ProbabilityHeuristicSelectiveArtificial(7000, 1, 1000000000, _randomGenerator);
 		}
-		_artificial2 = new BruteRecurseArtificial(3, _randomGenerator);
+		_artificial2 = new HeuristicSelectiveArtificial(7000, 1, 1000000000, _randomGenerator);
 	}
 	else
 	{

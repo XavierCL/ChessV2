@@ -1,3 +1,3 @@
-#include "../../../Headers/Artificial/HeuristicSelective/GameScore.h"
+#include "../../../Headers/Artificial/ProbabilityHeuristicSelective/ProbabilityGameScore.h"
 
-const double GameScore::AVERAGE_RATIO = 0.00001;
+const double ProbabilityGameScore::AVERAGE_RATIO = 0.00001;

@@ -34,7 +34,6 @@ public:
 	template<typename _ContainerType>
 	const void gatherChildren(const _ContainerType& gameScoreHolders)
 	{
-		double probabilitySum = gameScoreHolders[0]->gameScore()._score;
 		size_t scoreIndex = 0;
 		std::function<bool(const ProbabilityGameScore&, const ProbabilityGameScore&)> firstScoreWin = [](const ProbabilityGameScore& first, const ProbabilityGameScore& second) {
 			return first.whiteWinsOver(second);
@@ -66,6 +65,13 @@ public:
 			_relativeProbability = gameScoreHolders[relativeProbabilityIndex]->gameScore()._probability;
 			_dephasedProbabilityScore = gameScoreHolders[relativeProbabilityIndex]->gameScore()._dephasedProbabilityScore;
 		}
+
+		double probabilitySum = 0;
+		if (relativeProbabilityIndex == 0)
+		{
+			double probabilitySum = gameScoreHolders[0]->gameScore()._score;
+		}
+
 		_score = gameScoreHolders[0]->gameScore()._score;
 		_averageScore = gameScoreHolders[0]->gameScore()._averageScore;
 		_dephasedScore = gameScoreHolders[0]->gameScore()._dephasedScore;

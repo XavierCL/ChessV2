@@ -4,14 +4,14 @@
 
 #include <iostream>
 
-class HeuristicSelectiveGameTree
+class ProbabilityHeuristicSelectiveGameTree
 {
 public:
-	HeuristicSelectiveGameTree(const GameSet &gameSet)
+	ProbabilityHeuristicSelectiveGameTree(const GameSet &gameSet)
 		: _root(new ProbabilityHeuristicSelectiveGameNode(gameSet))
 	{}
 
-	~HeuristicSelectiveGameTree()
+	~ProbabilityHeuristicSelectiveGameTree()
 	{
 		_root->remove();
 		delete _root;

@@ -82,6 +82,21 @@ public:
 		}
 	}
 
+	void developBias()
+	{
+		if (!isTerminal())
+		{
+			if (!_isLeaf)
+			{
+				biaisedChosenOne()->developBias();
+			}
+			else
+			{
+				developDepth1();
+			}
+		}
+	}
+
 	void setRoot(const GameSet& gameSet)
 	{
 		_parents.resize(0);
@@ -151,6 +166,7 @@ public:
 		}
 		chosens.reserve(_children.size() - childCounter);
 		chosens.push_back(_children[childCounter]);
+		++childCounter;
 		if (_gameSet.isWhiteTurn())
 		{
 			for (; childCounter < _children.size(); ++childCounter)

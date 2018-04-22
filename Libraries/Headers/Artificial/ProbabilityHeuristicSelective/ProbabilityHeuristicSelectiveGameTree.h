@@ -35,7 +35,7 @@ public:
 	{
 		while (!shouldStop() && !_root->isTerminal())
 		{
-			_root->develop();
+			_root->developBias();
 			_root->develop();
 			_root->develop();
 		}
@@ -54,12 +54,9 @@ public:
 private:
 	void updateNewRoot(const GameSet& gameSet)
 	{
+		_root->develop();
 		const Board& board = gameSet.currentBoard();
-		if (_root->gameSet().currentBoard() == board)
-		{
-			_root->develop();
-		}
-		else
+		if (_root->gameSet().currentBoard() != board)
 		{
 			_root->develop();
 

@@ -33,6 +33,11 @@ public:
 			&& _castleFlags == other._castleFlags;
 	}
 
+	const bool operator!=(const Board& other) const
+	{
+		return !(other == *this);
+	}
+
 	const size_t hash() const
 	{
 		return _bitBoards.hash() * 3

@@ -3,6 +3,7 @@
 #include "ProbabilityHeuristicSelectiveGameNode.h"
 
 #include <iostream>
+#include <thread>
 
 class ProbabilityHeuristicSelectiveGameTree
 {
@@ -30,15 +31,74 @@ public:
 		updateNewRoot(gameSet);
 	}
 
-	template <typename _PredicateType>
-	void developUntil(const _PredicateType& shouldStop)
+	template<typename _PredicateType>
+	void developChildren(const std::vector<ProbabilityHeuristicSelectiveGameNode*> &children, const _PredicateType& shouldStop)
 	{
-		while (!shouldStop() && !_root->isTerminal())
+		ProbabilityHeuristicSelectiveGameNode newRoot(_root->gameSet(), children);
+		while (!shouldStop() && !newRoot.isTerminal())
 		{
-			_root->developBias();
-			_root->develop();
-			_root->develop();
+			newRoot.developBias();
+			newRoot.develop();
 		}
+	}
+
+	template <typename _PredicateType>
+	void developUntil(const _PredicateType& shouldStop, const size_t &threadCount)
+	{
+		std::vector<ProbabilityHeuristicSelectiveGameNode*> newChildren;
+		double totalProbability = 0;
+		size_t nonTerminalChildrenCount = 0;
+		for (auto const * const & child : _root->children())
+		{
+			if (!child->isTerminal())
+			{
+				totalScore += child->gameScore().probability()
+					++nonTerminalChildrenCount;
+			}
+		}
+		double probabilityPerThread = totalProbability / threadCount;
+		size_t currentChildIndex = 0;
+		while (currentChildIndex < _root->children().size() && _root->children()[currentChildIndex]->isTerminal())
+		{
+			++currentChildIndex;
+		}
+		_developmentThreads.clear();
+		for (size_t currentThreadCount = 0; currentThreadCount < threadCount && currentChildIndex < _root->children.size(); ++currentThreadCount)
+		{
+			std::vector<ProbabilityHeuristicSelectiveGameNode*> threadChildren(1, _root->children()[currentChildIndex]);
+			double currentProbability = _root->children()[currentChildIndex]->gameScore().probability();
+			++currentChildIndex;
+			while (currentChildIndex < _root->children().size() && _root->children()[currentChildIndex]->isTerminal())
+			{
+				++currentChildIndex;
+			}
+			while (currentChildIndex < _root->children().size()
+				&& FastMath::absDiff(currentProbability + _root->children()[currentChildIndex]->gameScore().probability() + 1, probabilityPerThread)
+			> FastMath::absDiff(currentProbability, currentProbability))
+			{
+				threadChildren.push_back(_root->children()[currentChildIndex]);
+				currentScore += _root->children()[currentChildIndex]->gameScore().probability();
+				++currentChildIndex;
+				while (currentChildIndex < _root->children().size() && _root->children()[currentChildIndex]->isTerminal())
+				{
+					++currentChildIndex;
+				}
+			}
+			_developmentThreads.emplace_back(ProbabilityHeuristicSelectiveGameTree::developChildren, threadChildren, shouldStop);
+		}
+	}
+
+	void waitForDeveloppementEnd()
+	{
+		for (auto &t : _developmentThreads)
+		{
+			t.join();
+		}
+		_developmentThreads.clear();
+		auto rootGameSet = _root->gameSet();
+		auto rootChildren = _root->children();
+		delete _root;
+		_root = new ProbabilityHeuristicSelectiveGameNode(rootGameSet, rootChildren);
 	}
 
 	const size_t size() const
@@ -70,16 +130,13 @@ private:
 				else
 				{
 					// mark for removal and remove in a thread while waiting for the enemy's turn
-					child->removeParent(_root);
-					if (!child->hasParent())
-					{
-						delete child;
-					}
+					child->remove();
+					delete child;
 				}
 			}
 			delete _root;
 			_root = newRoot;
-			_root->setRoot(gameSet);
+			_root->setRoot();
 		}
 	}
 
@@ -98,4 +155,5 @@ private:
 	}
 
 	ProbabilityHeuristicSelectiveGameNode* _root;
+	std::vector<std::thread> _developmentThreads;
 };

@@ -13,7 +13,7 @@ public:
 
 	ProbabilityHeuristicSelectiveGameNode(const GameSet &gameSet)
 		: _gameSet(gameSet),
-		_parents(),
+		_parent(nullptr),
 		_isLeaf(true),
 		_size(1),
 		_gameScore(gameSet)
@@ -21,49 +21,39 @@ public:
 
 	ProbabilityHeuristicSelectiveGameNode(const GameSet &gameSet, const ProbabilityGameScore &parentGameScore)
 		: _gameSet(gameSet),
-		_parents(),
+		_parent(nullptr),
 		_isLeaf(true),
 		_size(1),
 		_gameScore(gameSet, parentGameScore)
 	{}
 
-	~ProbabilityHeuristicSelectiveGameNode()
+	ProbabilityHeuristicSelectiveGameNode(const GameSet& gameSet, const std::vector<ProbabilityHeuristicSelectiveGameNode*> &children)
+		: _gameSet(gameSet),
+		_parent(nullptr),
+		_isLeaf(false),
+		_children(children),
+		_gameScore(children)
 	{
-		NODES.get(gameSet().currentBoard()).filter([this](ProbabilityHeuristicSelectiveGameNode * const foundNode) {
-			return this == foundNode;
-		}).foreach([this](ProbabilityHeuristicSelectiveGameNode * const foundNode) {
-			NODES.remove(gameSet().currentBoard());
-		});
-	}
-
-	void addParent(ProbabilityHeuristicSelectiveGameNode * const &parent)
-	{
-		_parents.push_back(parent);
-	}
-
-	const size_t hasParent() const
-	{
-		return _parents.size() > 0;
-	}
-
-	void removeParent(ProbabilityHeuristicSelectiveGameNode const * const &parent)
-	{
-		_parents.erase(std::remove(_parents.begin(), _parents.end(), parent), _parents.end());
-		if (!hasParent())
+		_size = 0;
+		for (auto * const &child : children)
 		{
-			remove();
+			child->_parent = this;
+			_size += child->_size;
 		}
+		_size += 1;
+	}
+
+	const bool hasParent() const
+	{
+		return _parent;
 	}
 
 	void remove()
 	{
 		for (auto * child : _children)
 		{
-			child->removeParent(this);
-			if (!child->hasParent())
-			{
-				delete child;
-			}
+			child->remove();
+			delete child;
 		}
 	}
 
@@ -97,9 +87,9 @@ public:
 		}
 	}
 
-	void setRoot(const GameSet& gameSet)
+	void setRoot()
 	{
-		_parents.resize(0);
+		_parent = nullptr;
 	}
 
 	std::vector<ProbabilityHeuristicSelectiveGameNode*> children()
@@ -225,7 +215,6 @@ public:
 	}
 
 	static std::minstd_rand0* GENERATOR;
-	static FixedUnorderedMap<Board, ProbabilityHeuristicSelectiveGameNode*, BoardHash> NODES;
 
 private:
 
@@ -233,21 +222,18 @@ private:
 	{
 		const ProbabilityGameScore previousGameScore = _gameScore;
 		gatherChildrenUtility();
-		if (!_gameScore.isSameScore(previousGameScore))
+		if (!_gameScore.isSameScore(previousGameScore) && hasParent())
 		{
-			for (auto* parent : _parents)
-			{
-				parent->backPropagateUtility();
-			}
+			_parent->backPropagateUtility();
 		}
 	}
 
 	void backPropagateSize(const size_t addedSize)
 	{
 		_size += addedSize;
-		for (auto* parent : _parents)
+		if (hasParent())
 		{
-			parent->backPropagateSize(addedSize);
+			_parent->backPropagateSize(addedSize);
 		}
 	}
 
@@ -258,14 +244,8 @@ private:
 		for (Move const * const move : *_gameSet.getLegals())
 		{
 			const GameSet child(_gameSet.playMove(*move));
-			ProbabilityHeuristicSelectiveGameNode* childNode(NODES.get(child.currentBoard()).filter([&child](ProbabilityHeuristicSelectiveGameNode* const foundNode) {
-				return foundNode->gameSet() == child;
-			}).getOrElse([&child, this]() {
-				auto* node = new ProbabilityHeuristicSelectiveGameNode(child, _gameScore);
-				NODES.set(child.currentBoard(), node);
-				return node;
-			}));
-			childNode->addParent(this);
+			ProbabilityHeuristicSelectiveGameNode* childNode(new ProbabilityHeuristicSelectiveGameNode(child, _gameScore));
+			childNode->_parent = this;
 			_children.push_back(childNode);
 			addedSize += childNode->size();
 		}
@@ -284,6 +264,6 @@ private:
 
 	bool _isLeaf;
 	size_t _size;
-	std::vector<ProbabilityHeuristicSelectiveGameNode*> _parents;
+	ProbabilityHeuristicSelectiveGameNode* _parent;
 	std::vector<ProbabilityHeuristicSelectiveGameNode*> _children;
 };

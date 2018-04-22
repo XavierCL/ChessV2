@@ -117,7 +117,14 @@ public:
 		return b < a ? b : a;
 	}
 
-	static const double sigmoid(const double& x) {
+	static const double sigmoid(const double& x)
+	{
 		return x / (1 + std::abs(x));
+	}
+
+	template <typename _Type, typename _DiffType>
+	static const _DiffType absDiff(const _Type& a, const _Type& b)
+	{
+		return a > b ? a - b : b - a;
 	}
 };

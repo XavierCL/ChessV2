@@ -32,6 +32,13 @@ public:
 	}
 
 	template<typename _ContainerType>
+	ProbabilityGameScore(const _ContainerType& gameScoreHolders)
+		: _depth(gameScoreHolders.front()->gameScore()._depth - 1)
+	{
+		gatherChildren(gameScoreHolders);
+	}
+
+	template<typename _ContainerType>
 	const void gatherChildren(const _ContainerType& gameScoreHolders)
 	{
 		size_t scoreIndex = 0;
@@ -249,6 +256,11 @@ public:
 				}
 			}
 		}
+	}
+
+	const double probability() const
+	{
+		return _probability;
 	}
 
 private:

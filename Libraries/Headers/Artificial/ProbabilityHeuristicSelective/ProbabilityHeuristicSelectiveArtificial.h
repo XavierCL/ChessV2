@@ -20,7 +20,6 @@ public:
 		_gameTree(GameSet())
 	{
 		ProbabilityHeuristicSelectiveGameNode::GENERATOR = generator;
-		ProbabilityHeuristicSelectiveGameNode::NODES.clear();
 	}
 
 	Move const * getMove(const GameSet& gameSet) override
@@ -42,7 +41,7 @@ public:
 			const clock_t end_time = clock();
 			bool shouldStop = (1000 * (end_time - begin_time)) / CLOCKS_PER_SEC >= _msSelfTime || _gameTree.size() * sizeof(ProbabilityHeuristicSelectiveGameNode) >= _maxNodeCount;
 			return shouldStop;
-		});
+		}, _threadCount);
 		printDebugInfo();
 		return _gameTree.playMove();
 	}

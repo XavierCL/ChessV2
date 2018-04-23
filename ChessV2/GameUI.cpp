@@ -433,7 +433,7 @@ void GameUI::startNewGame()
 		}
 		else
 		{
-			_artificial = new ProbabilityHeuristicSelectiveArtificial(7000, 1, 1000000000, _randomGenerator);
+			_artificial = new ProbabilityHeuristicSelectiveArtificial(7000, 2, 1000000000, _randomGenerator);
 		}
 		_artificial2 = new HeuristicSelectiveArtificial(7000, 1, 1000000000, _randomGenerator);
 	}

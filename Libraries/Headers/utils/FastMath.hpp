@@ -122,8 +122,8 @@ public:
 		return x / (1 + std::abs(x));
 	}
 
-	template <typename _Type, typename _DiffType>
-	static const _DiffType absDiff(const _Type& a, const _Type& b)
+	template <typename _Type>
+	static const _Type absDiff(const _Type& a, const _Type& b)
 	{
 		return a > b ? a - b : b - a;
 	}

@@ -41,6 +41,7 @@ public:
 			_size += child->_size;
 		}
 		_size += 1;
+		gatherChildrenUtility();
 	}
 
 	const bool hasParent() const

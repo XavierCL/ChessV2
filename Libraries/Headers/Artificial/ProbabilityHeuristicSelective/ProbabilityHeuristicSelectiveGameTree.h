@@ -4,6 +4,7 @@
 
 #include <iostream>
 #include <thread>
+#include <functional>
 
 class ProbabilityHeuristicSelectiveGameTree
 {
@@ -20,6 +21,7 @@ public:
 
 	Move const * const playMove()
 	{
+		_root->develop();
 		ProbabilityHeuristicSelectiveGameNode const * const bestChild = _root->biaisedChosenOne();
 		auto const * const bestMove = getMoveFromNodeAndNextBoard(*_root, bestChild->gameSet().currentBoard());
 		updateNewRoot(_root->gameSet().playMove(*bestMove));
@@ -31,8 +33,7 @@ public:
 		updateNewRoot(gameSet);
 	}
 
-	template<typename _PredicateType>
-	void developChildren(const std::vector<ProbabilityHeuristicSelectiveGameNode*> &children, const _PredicateType& shouldStop)
+	void developChildren(const std::vector<ProbabilityHeuristicSelectiveGameNode*> children, const std::function<bool()> shouldStop)
 	{
 		ProbabilityHeuristicSelectiveGameNode newRoot(_root->gameSet(), children);
 		while (!shouldStop() && !newRoot.isTerminal())
@@ -52,8 +53,8 @@ public:
 		{
 			if (!child->isTerminal())
 			{
-				totalScore += child->gameScore().probability()
-					++nonTerminalChildrenCount;
+				totalProbability += child->gameScore().probability() + 1;
+				++nonTerminalChildrenCount;
 			}
 		}
 		double probabilityPerThread = totalProbability / threadCount;
@@ -63,28 +64,29 @@ public:
 			++currentChildIndex;
 		}
 		_developmentThreads.clear();
-		for (size_t currentThreadCount = 0; currentThreadCount < threadCount && currentChildIndex < _root->children.size(); ++currentThreadCount)
+		double currentProbability = 0;
+		for (size_t currentThreadCount = 0; currentThreadCount < threadCount && currentChildIndex < _root->children().size(); ++currentThreadCount)
 		{
 			std::vector<ProbabilityHeuristicSelectiveGameNode*> threadChildren(1, _root->children()[currentChildIndex]);
-			double currentProbability = _root->children()[currentChildIndex]->gameScore().probability();
+			currentProbability += _root->children()[currentChildIndex]->gameScore().probability() + 1;
 			++currentChildIndex;
 			while (currentChildIndex < _root->children().size() && _root->children()[currentChildIndex]->isTerminal())
 			{
 				++currentChildIndex;
 			}
 			while (currentChildIndex < _root->children().size()
-				&& FastMath::absDiff(currentProbability + _root->children()[currentChildIndex]->gameScore().probability() + 1, probabilityPerThread)
-			> FastMath::absDiff(currentProbability, currentProbability))
+				&& (FastMath::absDiff(currentProbability + _root->children()[currentChildIndex]->gameScore().probability() + 1, probabilityPerThread * (currentThreadCount + 1))
+			< FastMath::absDiff(currentProbability, probabilityPerThread * (currentThreadCount + 1)) || currentThreadCount == threadCount - 1))
 			{
 				threadChildren.push_back(_root->children()[currentChildIndex]);
-				currentScore += _root->children()[currentChildIndex]->gameScore().probability();
+				currentProbability += _root->children()[currentChildIndex]->gameScore().probability() + 1;
 				++currentChildIndex;
 				while (currentChildIndex < _root->children().size() && _root->children()[currentChildIndex]->isTerminal())
 				{
 					++currentChildIndex;
 				}
 			}
-			_developmentThreads.emplace_back(ProbabilityHeuristicSelectiveGameTree::developChildren, threadChildren, shouldStop);
+			_developmentThreads.push_back(std::thread(&ProbabilityHeuristicSelectiveGameTree::developChildren, this, threadChildren, shouldStop));
 		}
 	}
 
@@ -95,10 +97,13 @@ public:
 			t.join();
 		}
 		_developmentThreads.clear();
-		auto rootGameSet = _root->gameSet();
-		auto rootChildren = _root->children();
-		delete _root;
-		_root = new ProbabilityHeuristicSelectiveGameNode(rootGameSet, rootChildren);
+		if (!_root->children().empty())
+		{
+			auto rootGameSet = _root->gameSet();
+			auto rootChildren = _root->children();
+			delete _root;
+			_root = new ProbabilityHeuristicSelectiveGameNode(rootGameSet, rootChildren);
+		}
 	}
 
 	const size_t size() const

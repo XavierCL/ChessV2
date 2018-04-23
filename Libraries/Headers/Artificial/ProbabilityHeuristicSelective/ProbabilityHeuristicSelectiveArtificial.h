@@ -22,14 +22,21 @@ public:
 		ProbabilityHeuristicSelectiveGameNode::GENERATOR = generator;
 	}
 
+	~ProbabilityHeuristicSelectiveArtificial()
+	{
+		_enemyTurnStopThinking = true;
+		_gameTree.waitForDeveloppementEnd();
+	}
+
 	Move const * getMove(const GameSet& gameSet) override
 	{
-
 		if (gameSet.currentBoard() == Board())
 		{
 			Logger::info("Starting\n");
 		}
 
+		_enemyTurnStopThinking = true;
+		_gameTree.waitForDeveloppementEnd();
 		_gameTree.playMove(gameSet);
 
 		// Timing should start when function is first called,
@@ -42,8 +49,16 @@ public:
 			bool shouldStop = (1000 * (end_time - begin_time)) / CLOCKS_PER_SEC >= _msSelfTime || _gameTree.size() * sizeof(ProbabilityHeuristicSelectiveGameNode) >= _maxNodeCount;
 			return shouldStop;
 		}, _threadCount);
+		_gameTree.waitForDeveloppementEnd();
 		printDebugInfo();
-		return _gameTree.playMove();
+		auto const * const selectedMove = _gameTree.playMove();
+
+		_enemyTurnStopThinking = false;
+		_gameTree.developUntil([this]() {
+			return _enemyTurnStopThinking;
+		}, _threadCount);
+
+		return selectedMove;
 	}
 
 private:
@@ -54,6 +69,7 @@ private:
 	const size_t _maxNodeCount;
 
 	ProbabilityHeuristicSelectiveGameTree _gameTree;
+	bool _enemyTurnStopThinking;
 
 	void printDebugInfo()
 	{

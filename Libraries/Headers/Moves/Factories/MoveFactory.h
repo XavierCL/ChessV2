@@ -23,7 +23,7 @@ public:
 
 	const std::shared_ptr<std::vector<Move const *>> getLegalMoves() const
 	{
-		return _legalMap.get(_currentBoard).getOrElse([this]() {
+		// return _legalMap.get(_currentBoard).getOrElse([this]() {
 			std::shared_ptr<std::vector<Move const *>> legalMoves(std::make_shared<std::vector<Move const *>>());
 
 			FastMath::pushAllPointer(legalMoves, PawnMoveFactory(_currentBoard).getLegalMoves()); // check en passant
@@ -34,10 +34,10 @@ public:
 			FastMath::pushAllPointer(legalMoves, KingMoveFactory(_currentBoard).getLegalMoves());
 			FastMath::pushAllPointer(legalMoves, CastleMoveFactory(_currentBoard).getLegalMoves());
 
-			_legalMap.set(_currentBoard, legalMoves);
+			// _legalMap.set(_currentBoard, legalMoves);
 
 			return legalMoves;
-		});
+		// });
 	}
 
 private:

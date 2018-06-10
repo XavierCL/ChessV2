@@ -19,7 +19,7 @@ public:
 	{}
 
 	Option(const Option<_Type>& copy)
-		: _inner(swap(copy))
+		: _inner(newFrom(copy))
 	{}
 
 	~Option()
@@ -32,7 +32,7 @@ public:
 		if (&other != this)
 		{
 			remove();
-			_inner = swap(other);
+			_inner = newFrom(other);
 		}
 		return *this;
 	}
@@ -157,7 +157,7 @@ private:
 		}
 	}
 
-	const _Type* swap(const Option<_Type>& other)
+	const _Type* newFrom(const Option<_Type>& other)
 	{
 		return other.isDefined() ? new _Type(*other._inner) : nullptr;
 	}

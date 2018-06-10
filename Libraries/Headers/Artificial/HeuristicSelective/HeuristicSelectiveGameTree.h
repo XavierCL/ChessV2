@@ -2,26 +2,31 @@
 
 #include "HeuristicSelectiveGameNode.h"
 
-#include <iostream>
+#include <deque>
 
 class HeuristicSelectiveGameTree
 {
 public:
-	HeuristicSelectiveGameTree(const GameSet &gameSet)
-		: _root(new HeuristicSelectiveGameNode(gameSet, GameScore(), BiaisedGameScore()))
+	HeuristicSelectiveGameTree(const GameSet &gameSet, std::minstd_rand0 randomGenerator, FixedUnorderedMap<Board, HeuristicSelectiveGameNode*, BoardHash> nodeRepository, FixedUnorderedMap<Board, std::shared_ptr<std::vector<Move const *>>, BoardHash> &legalCache)
+		: _root(new HeuristicSelectiveGameNode(gameSet)),
+		_randomGenerator(randomGenerator),
+		_nodeRepository(nodeRepository),
+		_legalCache(legalCache),
+		_realNodeCount(1)
 	{}
 
 	~HeuristicSelectiveGameTree()
 	{
-		_root->remove();
-		delete _root;
+		_root->removeRecursive(_nodeRepository, _deleter);
+		_deleter.deleteAll();
 	}
 
 	Move const * const playMove()
 	{
-		HeuristicSelectiveGameNode const * const bestChild = _root->biaisedChosenOne();
+		develop();
+		HeuristicSelectiveGameNode const * const bestChild = _root->biaisedChosenOne(_randomGenerator);
 		auto const * const bestMove = getMoveFromNodeAndNextBoard(*_root, bestChild->gameSet().currentBoard());
-		updateNewRoot(_root->gameSet().playMove(*bestMove));
+		updateNewRoot(bestChild->gameSet());
 		return bestMove;
 	}
 
@@ -30,20 +35,14 @@ public:
 		updateNewRoot(gameSet);
 	}
 
-	template <typename _PredicateType>
-	void developUntil(const _PredicateType& shouldStop)
-	{
-		while (!shouldStop() && !_root->isTerminal())
-		{
-			_root->develop();
-			_root->develop();
-			_root->develop();
-		}
-	}
-
-	const size_t size() const
+	const size_t treeSize() const
 	{
 		return _root->size();
+	}
+
+	const size_t realSize() const
+	{
+		return _realNodeCount;
 	}
 
 	HeuristicSelectiveGameNode* const root() const
@@ -51,49 +50,57 @@ public:
 		return _root;
 	}
 
+	template <typename _PredicateType>
+	void developUntil(const _PredicateType &shouldStop)
+	{
+		while (!shouldStop())
+		{
+			develop();
+		}
+	}
+
 private:
+
+	void develop()
+	{
+		_realNodeCount += _root->develop(_randomGenerator, _nodeRepository, _legalCache);
+	}
+
 	void updateNewRoot(const GameSet& gameSet)
 	{
+		develop();
 		const Board& board = gameSet.currentBoard();
-		if (_root->gameSet().currentBoard() == board)
+		if (_root->gameSet().currentBoard() != board)
 		{
-			_root->develop();
-		}
-		else
-		{
-			_root->develop();
-
 			HeuristicSelectiveGameNode* newRoot(nullptr);
 			for (auto * child : _root->children())
 			{
+				child->removeParent(_root);
 				if (child->gameSet().currentBoard() == board)
 				{
 					newRoot = child;
 				}
 				else
 				{
-					// mark for removal and remove in a thread while waiting for the enemy's turn
-					child->removeParent(_root);
-					if (!child->hasParent())
-					{
-						delete child;
-					}
+					_realNodeCount -= child->removeRecursive(_nodeRepository, _deleter);
 				}
 			}
-			delete _root;
+
+			_realNodeCount -= _root->removeSingle(_nodeRepository, _deleter);
 			_root = newRoot;
-			_root->setRoot(gameSet);
+
+			_deleter.deleteAll();
 		}
 	}
 
 	Move const * const getMoveFromNodeAndNextBoard(const HeuristicSelectiveGameNode& currentNode, const Board& nextBoard)
 	{
 		Move const * bestMove = nullptr;
-		for (size_t i = 0; i < currentNode.gameSet().getLegals()->size(); ++i)
+		for (const auto*& move : *currentNode.gameSet().getLegals())
 		{
-			if (currentNode.gameSet().playMove(*(*currentNode.gameSet().getLegals())[i]).currentBoard() == nextBoard)
+			if (move->play(currentNode.gameSet().currentBoard()) == nextBoard)
 			{
-				bestMove = (*currentNode.gameSet().getLegals())[i];
+				bestMove = move;
 				break;
 			}
 		}
@@ -101,4 +108,10 @@ private:
 	}
 
 	HeuristicSelectiveGameNode* _root;
+
+	std::minstd_rand0 _randomGenerator;
+	FixedUnorderedMap<Board, HeuristicSelectiveGameNode*, BoardHash> _nodeRepository;
+	FixedUnorderedMap<Board, std::shared_ptr<std::vector<Move const *>>, BoardHash> _legalCache;
+	Deleter<HeuristicSelectiveGameNode> _deleter;
+	size_t _realNodeCount;
 };

@@ -3,6 +3,8 @@
 #include "ProbabilityHeuristicSelectiveGameNode.h"
 
 #include <iostream>
+#include <thread>
+#include <functional>
 
 class ProbabilityHeuristicSelectiveGameTree
 {
@@ -41,6 +43,17 @@ public:
 		}
 	}
 
+	template <typename _PredicateType>
+	void developEnemyTurn(const _PredicateType &shouldStop)
+	{
+		_enemyThread = std::thread(&ProbabilityHeuristicSelectiveGameTree::developThreadEnemyTurn, this, shouldStop);
+	}
+
+	void waitForEnemyStop()
+	{
+		_enemyThread.join();
+	}
+
 	const size_t size() const
 	{
 		return _root->size();
@@ -52,6 +65,26 @@ public:
 	}
 
 private:
+
+	void developThreadEnemyTurn(const std::function<bool()>& shouldStop)
+	{
+		while (!_toBeRemoved.empty())
+		{
+			_toBeRemoved.back()->removeParent(_root);
+			if (!_toBeRemoved.back()->hasParent())
+			{
+				delete _toBeRemoved.back();
+			}
+			_toBeRemoved.pop_back();
+		}
+		while (!shouldStop() && !_root->isTerminal())
+		{
+			_root->developBias();
+			_root->develop();
+			_root->develop();
+		}
+	}
+
 	void updateNewRoot(const GameSet& gameSet)
 	{
 		_root->develop();
@@ -69,17 +102,12 @@ private:
 				}
 				else
 				{
-					// mark for removal and remove in a thread while waiting for the enemy's turn
-					child->removeParent(_root);
-					if (!child->hasParent())
-					{
-						delete child;
-					}
+					_toBeRemoved.push_back(child);
 				}
 			}
 			delete _root;
 			_root = newRoot;
-			_root->setRoot(gameSet);
+			_root->setRoot();
 		}
 	}
 
@@ -98,4 +126,6 @@ private:
 	}
 
 	ProbabilityHeuristicSelectiveGameNode* _root;
+	std::vector<ProbabilityHeuristicSelectiveGameNode*> _toBeRemoved;
+	std::thread _enemyThread;
 };

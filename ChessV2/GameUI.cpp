@@ -11,8 +11,9 @@
 using namespace std;
 
 GameUI::GameUI()
+	: _randomEngineGenerator(clock())
 {
-	_randomGenerator = new minstd_rand0(clock());
+	_randomGenerator = new std::minstd_rand0(_randomEngineGenerator.next());
 	_gameSet = NULL;
 	_pointsMouseCovered = NULL;
 	white = CreateSolidBrush(RGB(255, 255, 255));
@@ -429,13 +430,13 @@ void GameUI::startNewGame()
 		}
 		else if (IsDlgButtonChecked(_hwnd, 10) == BST_CHECKED)
 		{
-			_artificial = new HeuristicSelectiveArtificial(1000, 1, 1000000000, _randomGenerator);
+			_artificial = new HeuristicSelectiveArtificial(1000, 1000000, _randomEngineGenerator, FixedUnorderedMap<Board, std::shared_ptr<std::vector<Move const *>>, BoardHash>(1000000));
 		}
 		else
 		{
 			_artificial = new ProbabilityHeuristicSelectiveArtificial(7000, 1, 1000000000, _randomGenerator);
 		}
-		_artificial2 = new HeuristicSelectiveArtificial(7000, 1, 1000000000, _randomGenerator);
+		_artificial2 = new HeuristicSelectiveArtificial(7000, 20000, _randomEngineGenerator, FixedUnorderedMap<Board, std::shared_ptr<std::vector<Move const *>>, BoardHash>(1000000));
 	}
 	else
 	{
@@ -727,7 +728,7 @@ GameUI::~GameUI()
 {
 	DeleteObject(_backGroundBitmap);
 	if (_gameSet)delete _gameSet;
-	/*if(_artificial)delete _artificial;*/
+	if(_artificial)delete _artificial;
 	delete _randomGenerator;
 	DeleteObject(white);
 	DeleteObject(darkBrown);

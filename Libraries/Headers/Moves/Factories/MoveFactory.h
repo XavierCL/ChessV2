@@ -23,25 +23,30 @@ public:
 
 	const std::shared_ptr<std::vector<Move const *>> getLegalMoves() const
 	{
-		return _legalMap.get(_currentBoard).getOrElse([this]() {
-			std::shared_ptr<std::vector<Move const *>> legalMoves(std::make_shared<std::vector<Move const *>>());
+		std::shared_ptr<std::vector<Move const *>> legalMoves(std::make_shared<std::vector<Move const *>>());
 
-			FastMath::pushAllPointer(legalMoves, PawnMoveFactory(_currentBoard).getLegalMoves()); // check en passant
-			FastMath::pushAllPointer(legalMoves, KnightMoveFactory(_currentBoard).getLegalMoves());
-			FastMath::pushAllPointer(legalMoves, BishopMoveFactory(_currentBoard).getLegalMoves());
-			FastMath::pushAllPointer(legalMoves, RookMoveFactory(_currentBoard).getLegalMoves());
-			FastMath::pushAllPointer(legalMoves, QueenMoveFactory(_currentBoard).getLegalMoves());
-			FastMath::pushAllPointer(legalMoves, KingMoveFactory(_currentBoard).getLegalMoves());
-			FastMath::pushAllPointer(legalMoves, CastleMoveFactory(_currentBoard).getLegalMoves());
+		FastMath::pushAllPointer(legalMoves, PawnMoveFactory(_currentBoard).getLegalMoves()); // check en passant
+		FastMath::pushAllPointer(legalMoves, KnightMoveFactory(_currentBoard).getLegalMoves());
+		FastMath::pushAllPointer(legalMoves, BishopMoveFactory(_currentBoard).getLegalMoves());
+		FastMath::pushAllPointer(legalMoves, RookMoveFactory(_currentBoard).getLegalMoves());
+		FastMath::pushAllPointer(legalMoves, QueenMoveFactory(_currentBoard).getLegalMoves());
+		FastMath::pushAllPointer(legalMoves, KingMoveFactory(_currentBoard).getLegalMoves());
+		FastMath::pushAllPointer(legalMoves, CastleMoveFactory(_currentBoard).getLegalMoves());
 
-			_legalMap.set(_currentBoard, legalMoves);
+		return legalMoves;
+	}
+
+	const std::shared_ptr<std::vector<Move const *>> getLegalMoves(FixedUnorderedMap<Board, std::shared_ptr<std::vector<Move const *>>, BoardHash>& cache) const
+	{
+		return cache.get(_currentBoard).getOrElse([this, &cache]() {
+			auto legalMoves(getLegalMoves());
+
+			cache.set(_currentBoard, legalMoves);
 
 			return legalMoves;
 		});
 	}
 
 private:
-	static FixedUnorderedMap<Board, std::shared_ptr<std::vector<Move const *>>, BoardHash> _legalMap;
-
 	const Board _currentBoard;
 };

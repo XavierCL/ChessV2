@@ -8,7 +8,8 @@ class BruteRecurseArtificial: public Artificial
 public:
 	BruteRecurseArtificial(const unsigned char& depth, std::minstd_rand0* generator)
 		:_depth(depth),
-		_generator(generator)
+		_generator(generator),
+		legalCache(FixedUnorderedMap<Board, std::shared_ptr<std::vector<Move const *>>, BoardHash>(1000000))
 	{}
 
 	Move const * getMove(const GameSet& gameSet) override
@@ -23,10 +24,10 @@ public:
 			std::vector<Move const *> bestMoves(1, (*gameSet.getLegals())[0]);
 			if (gameSet.isWhiteTurn())
 			{
-				double maxScore = revaluate(gameSet.playMove(*(*gameSet.getLegals())[0]), _depth - 1, -1000);
+				double maxScore = revaluate(gameSet.playMove(*(*gameSet.getLegals())[0], legalCache), _depth - 1, -1000);
 				for (size_t i = 1; i < gameSet.getLegals()->size(); ++i)
 				{
-					double currentScore = revaluate(gameSet.playMove(*(*gameSet.getLegals())[i]), _depth - 1, maxScore);
+					double currentScore = revaluate(gameSet.playMove(*(*gameSet.getLegals())[i], legalCache), _depth - 1, maxScore);
 					if (maxScore < currentScore)
 					{
 						maxScore = currentScore;
@@ -41,10 +42,10 @@ public:
 			}
 			else
 			{
-				double minScore = revaluate(gameSet.playMove(*(*gameSet.getLegals())[0]), _depth - 1, 1000);
+				double minScore = revaluate(gameSet.playMove(*(*gameSet.getLegals())[0], legalCache), _depth - 1, 1000);
 				for (size_t i = 1; i < gameSet.getLegals()->size(); ++i)
 				{
-					double currentScore = revaluate(gameSet.playMove(*(*gameSet.getLegals())[i]), _depth - 1, minScore);
+					double currentScore = revaluate(gameSet.playMove(*(*gameSet.getLegals())[i], legalCache), _depth - 1, minScore);
 					if (minScore > currentScore)
 					{
 						minScore = currentScore;
@@ -67,8 +68,9 @@ private:
 
 	const unsigned char _depth;
 	std::minstd_rand0* const _generator;
+	FixedUnorderedMap<Board, std::shared_ptr<std::vector<Move const *>>, BoardHash> legalCache;
 
-	const double revaluate(const GameSet& gameSet, const unsigned char& depth, const double& lastBound) const
+	const double revaluate(const GameSet& gameSet, const unsigned char& depth, const double& lastBound)
 	{
 		if (shouldStopSearch(gameSet.getStatus()))
 		{
@@ -83,12 +85,12 @@ private:
 			double average = 0;
 			if (gameSet.isWhiteTurn())
 			{
-				double maxScore = revaluate(gameSet.playMove(*(*gameSet.getLegals())[0]), depth - 1, -1000);
+				double maxScore = revaluate(gameSet.playMove(*(*gameSet.getLegals())[0], legalCache), depth - 1, -1000);
 				average += maxScore;
 				size_t i = 1;
 				for (; i < gameSet.getLegals()->size() && lastBound > (maxScore + (average / i) * AVERAGE_RATIO) / (1 + AVERAGE_RATIO); ++i)
 				{
-					double currentScore = revaluate(gameSet.playMove(*(*gameSet.getLegals())[i]), depth - 1, maxScore);
+					double currentScore = revaluate(gameSet.playMove(*(*gameSet.getLegals())[i], legalCache), depth - 1, maxScore);
 					average += currentScore;
 					if (maxScore < currentScore)
 					{
@@ -99,12 +101,12 @@ private:
 			}
 			else
 			{
-				double minScore = revaluate(gameSet.playMove(*(*gameSet.getLegals())[0]), depth - 1, 1000);
+				double minScore = revaluate(gameSet.playMove(*(*gameSet.getLegals())[0], legalCache), depth - 1, 1000);
 				average += minScore;
 				size_t i = 1;
 				for (; i < gameSet.getLegals()->size() && lastBound < (minScore + (average / i) * AVERAGE_RATIO) / (1 + AVERAGE_RATIO); ++i)
 				{
-					double currentScore = revaluate(gameSet.playMove(*(*gameSet.getLegals())[i]), depth - 1, minScore);
+					double currentScore = revaluate(gameSet.playMove(*(*gameSet.getLegals())[i], legalCache), depth - 1, minScore);
 					average += currentScore;
 					if (minScore > currentScore)
 					{

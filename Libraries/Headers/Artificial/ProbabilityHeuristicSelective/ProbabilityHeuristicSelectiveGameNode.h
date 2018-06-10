@@ -97,7 +97,7 @@ public:
 		}
 	}
 
-	void setRoot(const GameSet& gameSet)
+	void setRoot()
 	{
 		_parents.resize(0);
 	}

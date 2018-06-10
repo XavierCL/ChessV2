@@ -18,8 +18,11 @@ public:
 
 	const bool operator==(const CastleFlags& other) const
 	{
-		// size_of(_allowedCastles) * size_of(bool) == 4
-		return memcmp(&_allowedCastles[0], &other._allowedCastles[0], 4) == 0;
+		return memcmp(
+			&_allowedCastles[0],
+			&other._allowedCastles[0],
+			sizeof(_allowedCastles) * sizeof(bool)
+		) == 0;
 	}
 
 	const size_t hash() const

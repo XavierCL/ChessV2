@@ -15,12 +15,30 @@ class GameSet
 {
 public:
 
+	GameSet(FixedUnorderedMap<Board, std::shared_ptr<std::vector<Move const *>>, BoardHash> &legalCache)
+		: _currentBoard(),
+		_history{ { _currentBoard , 1 } },
+		_remainingNonCapturingCount(ALLOWED_NON_CAPTURING_COUNT),
+		_gameStatusNoMatterLegalMoves(generateGameStatusNoMatterLegalMoves()),
+		_legalMoves(generateLegalMoves(legalCache)),
+		_gameStatus(generateGameStatus())
+	{}
+
 	GameSet()
 		: _currentBoard(),
 		_history{ { _currentBoard , 1 } },
 		_remainingNonCapturingCount(ALLOWED_NON_CAPTURING_COUNT),
 		_gameStatusNoMatterLegalMoves(generateGameStatusNoMatterLegalMoves()),
 		_legalMoves(generateLegalMoves()),
+		_gameStatus(generateGameStatus())
+	{}
+
+	GameSet(const Board& currentBoard, const std::unordered_map<Board, unsigned char, BoardHash>& history, const unsigned char& remainingNonCapturingCount, FixedUnorderedMap<Board, std::shared_ptr<std::vector<Move const *>>, BoardHash> &legalCache)
+		: _currentBoard(currentBoard),
+		_history(history),
+		_remainingNonCapturingCount(remainingNonCapturingCount),
+		_gameStatusNoMatterLegalMoves(generateGameStatusNoMatterLegalMoves()),
+		_legalMoves(generateLegalMoves(legalCache)),
 		_gameStatus(generateGameStatus())
 	{}
 
@@ -33,28 +51,77 @@ public:
 		_gameStatus(generateGameStatus())
 	{}
 
-	const GameSet playMove(const Move &move) const
+	const GameSet playMove(const Move &move, FixedUnorderedMap<Board, std::shared_ptr<std::vector<Move const *>>, BoardHash> &legalCache) const
 	{
 		const Board newBoard(move.play(_currentBoard));
+
+		auto createNextGameSetWithHistory = [this, &newBoard, &legalCache](const std::unordered_map<Board, unsigned char, BoardHash> &history) {
+			if (canMoveBackToLastPosition(_currentBoard, newBoard))
+			{
+				return GameSet(
+					newBoard,
+					history,
+					_remainingNonCapturingCount - 1,
+					legalCache
+				);
+			}
+			else
+			{
+				return GameSet(
+					newBoard,
+					history,
+					ALLOWED_NON_CAPTURING_COUNT,
+					legalCache
+				);
+			}
+		};
 
 		if (canMoveBackToLastBoard(_currentBoard, newBoard))
 		{
 			std::unordered_map<Board, unsigned char, BoardHash> newHistory(_history);
 			newHistory[newBoard] = newHistory[newBoard] + 1;
 
-			return GameSet(
-				newBoard,
-				newHistory,
-				_remainingNonCapturingCount - 1
-			);
+			return createNextGameSetWithHistory(newHistory);
 		}
 		else
 		{
-			return GameSet(
-				newBoard,
-				std::unordered_map<Board, unsigned char, BoardHash>(),
-				ALLOWED_NON_CAPTURING_COUNT
-			);
+			return createNextGameSetWithHistory(std::unordered_map<Board, unsigned char, BoardHash>());
+		}
+	}
+
+	const GameSet playMove(const Move &move) const
+	{
+		const Board newBoard(move.play(_currentBoard));
+
+		auto createNextGameSetWithHistory = [this, &newBoard](const std::unordered_map<Board, unsigned char, BoardHash> &history) {
+			if (canMoveBackToLastPosition(_currentBoard, newBoard))
+			{
+				return GameSet(
+					newBoard,
+					history,
+					_remainingNonCapturingCount - 1
+				);
+			}
+			else
+			{
+				return GameSet(
+					newBoard,
+					history,
+					ALLOWED_NON_CAPTURING_COUNT
+				);
+			}
+		};
+
+		if (canMoveBackToLastBoard(_currentBoard, newBoard))
+		{
+			std::unordered_map<Board, unsigned char, BoardHash> newHistory(_history);
+			newHistory[newBoard] = newHistory[newBoard] + 1;
+
+			return createNextGameSetWithHistory(newHistory);
+		}
+		else
+		{
+			return createNextGameSetWithHistory(std::unordered_map<Board, unsigned char, BoardHash>());
 		}
 	}
 
@@ -113,10 +180,16 @@ private:
 	const static unsigned char ALLOWED_NON_CAPTURING_COUNT = 50;
 	const static unsigned char ALLOWED_REPETITIONS = 2;
 
-	const bool canMoveBackToLastBoard(const Board& lastBoard, const Board& currentBoard) const
+	const bool canMoveBackToLastPosition(const Board& lastBoard, const Board& currentBoard) const
 	{
 		return currentBoard.bitBoards().equalsSinglePieceType(PieceType::PAWN, lastBoard.bitBoards())
 			&& currentBoard.bitBoards().pieceCountEquals(lastBoard.bitBoards());
+	}
+
+	const bool canMoveBackToLastBoard(const Board& lastBoard, const Board& currentBoard) const
+	{
+		return canMoveBackToLastPosition(lastBoard, currentBoard)
+			&& lastBoard.castleFlags() == currentBoard.castleFlags();
 	}
 
 	const bool isFiftyMoveDraw() const
@@ -145,6 +218,20 @@ private:
 		}
 	}
 
+	const std::shared_ptr<std::vector<Move const *>> generateLegalMoves(FixedUnorderedMap<Board, std::shared_ptr<std::vector<Move const *>>, BoardHash> &legalCache) const
+	{
+		if (_gameStatusNoMatterLegalMoves == Option<GameStatus>(GameStatus::LIVE) || _gameStatusNoMatterLegalMoves == Option<GameStatus>())
+		{
+			return MoveFactory(
+				_currentBoard
+			).getLegalMoves(legalCache);
+		}
+		else
+		{
+			return std::make_shared<std::vector<Move const *>>();
+		}
+	}
+
 	const std::shared_ptr<std::vector<Move const *>> generateLegalMoves() const
 	{
 		if (_gameStatusNoMatterLegalMoves == Option<GameStatus>(GameStatus::LIVE) || _gameStatusNoMatterLegalMoves == Option<GameStatus>())
@@ -155,7 +242,7 @@ private:
 		}
 		else
 		{
-			return std::make_shared<std::vector<Move const *>>();
+			return EMPTY_MOVES;
 		}
 	}
 
@@ -186,6 +273,7 @@ private:
 
 	static const std::hash<unsigned char> CHAR_HASH;
 	static const std::hash<size_t> SIZE_HASH;
+	static const std::shared_ptr<std::vector<Move const *>> EMPTY_MOVES;
 
 	const Board _currentBoard;
 	const std::unordered_map<Board, unsigned char, BoardHash> _history;

@@ -13,8 +13,19 @@ public:
 	FixedUnorderedMap(const size_t& minCapacity)
 		: _capacity(FastMath::nextOrSamePrime(minCapacity)),
 		_size(0),
-		_container(new Option<std::pair<_KeyType, _ValueType>>[_capacity])
+		_container(new Option<std::pair<_KeyType, _ValueType>>[_capacity]) // warning about use of other members in member initialization
 	{}
+
+	FixedUnorderedMap(const FixedUnorderedMap<_KeyType, _ValueType, _KeyHashType> &other)
+		: _capacity(other._capacity),
+		_size(other._size),
+		_container(new Option<std::pair<_KeyType, _ValueType>>[other._capacity])
+	{
+		for (size_t index = 0; index < _capacity; ++index)
+		{
+			_container[index] = other._container[index];
+		}
+	}
 
 	~FixedUnorderedMap()
 	{
@@ -70,6 +81,8 @@ public:
 		}
 	}
 
+	static const FixedUnorderedMap<_KeyType, _ValueType, _KeyHashType> empty;
+
 private:
 	const size_t _capacity;
 	const _KeyHashType _hasher;
@@ -77,3 +90,5 @@ private:
 	Option<std::pair<_KeyType, _ValueType>>* const _container;
 	size_t _size;
 };
+
+#include "../../Sources/utils/FixedUnorderedMap.cpp"

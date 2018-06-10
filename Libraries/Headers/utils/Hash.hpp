@@ -1,18 +1,14 @@
 #pragma once
 
-#include <string>
-#include <functional>
+#include <cstdint>
 
 template <typename _Type>
-class Hash
+class PointerHash
 {
 public:
-	size_t operator()(const _Type & element) const
-	{
-		return _innerHash(std::string((char*)&element, sizeof(_Type)));
-	}
-private:
-	static const std::hash<std::string> _innerHash;
-};
 
-template <typename _Type> const std::hash<std::string> Hash<_Type>::_innerHash;
+	const size_t operator()(_Type const * const &hashed) const
+	{
+		return reinterpret_cast<uintptr_t>(hashed) % static_cast<uintptr_t>(sizeof(size_t));
+	}
+};

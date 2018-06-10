@@ -3,14 +3,30 @@
 #include "../../Game/GameSet.h"
 #include "GameScore.h"
 #include "BiaisedGameScore.h"
+#include "Deleter.h"
 
-#include <iostream>
+#include "../../utils/Hash.hpp"
+
 #include <random>
-#include <algorithm>
+#include <unordered_set>
+
+// This implementation doesn't support cyclic references
+// This is fine because such board games can't last an infinite number of moves.
 
 class HeuristicSelectiveGameNode
 {
 public:
+
+	HeuristicSelectiveGameNode(const GameSet &gameSet)
+		: _gameSet(gameSet),
+		_parents(),
+		_isLeaf(true),
+		_isTerminal(gameSet.getStatus() != GameStatus::LIVE),
+		_size(1),
+		_gameScore(GameScore(estimateScore(gameSet), GameScore())),
+		_biaisedGameScore(BiaisedGameScore(estimateScore(gameSet), BiaisedGameScore()))
+	{}
+
 	HeuristicSelectiveGameNode(const GameSet &gameSet, const GameScore &parentGameScore, const BiaisedGameScore &parentBiaisedGameScore)
 		: _gameSet(gameSet),
 		_parents(),
@@ -21,44 +37,58 @@ public:
 		_biaisedGameScore(BiaisedGameScore(estimateScore(gameSet), parentBiaisedGameScore))
 	{}
 
-	~HeuristicSelectiveGameNode()
-	{
-		NODES.get(gameSet().currentBoard()).filter([this](HeuristicSelectiveGameNode * const foundNode) {
-			return this == foundNode;
-		}).foreach([this](HeuristicSelectiveGameNode * const foundNode) {
-			NODES.remove(gameSet().currentBoard());
-		});
-	}
-
 	void addParent(HeuristicSelectiveGameNode * const &parent)
 	{
-		_parents.push_back(parent);
-	}
-
-	const size_t hasParent() const
-	{
-		return _parents.size() > 0;
-	}
-
-	void removeParent(HeuristicSelectiveGameNode const * const &parent)
-	{
-		_parents.erase(std::remove(_parents.begin(), _parents.end(), parent), _parents.end());
-		if (!hasParent())
+		auto thisParent = _parents.find(parent);
+		if (thisParent == _parents.cend())
 		{
-			remove();
+			_parents.insert(parent);
+		}
+		else
+		{
+			throw std::exception("Parent Node already existed.");
+		}
+		
+	}
+
+	const bool hasParent() const
+	{
+		return !_parents.empty();
+	}
+
+	void removeParent(HeuristicSelectiveGameNode * const &parent)
+	{
+		auto thisParent = _parents.find(parent);
+		if (thisParent != _parents.cend())
+		{
+			_parents.erase(thisParent);
+		}
+		else
+		{
+			throw std::exception("Node parent did not exist or was already removed");
 		}
 	}
 
-	void remove()
+	const size_t removeRecursive(FixedUnorderedMap<Board, HeuristicSelectiveGameNode*, BoardHash> &repository, Deleter<HeuristicSelectiveGameNode>& deleter)
 	{
+		size_t removedCount = 0;
 		for (auto * child : _children)
 		{
 			child->removeParent(this);
 			if (!child->hasParent())
 			{
-				delete child;
+				removedCount += child->removeRecursive(repository, deleter);
 			}
 		}
+		removedCount += removeSingle(repository, deleter);
+		return removedCount;
+	}
+
+	const size_t removeSingle(FixedUnorderedMap<Board, HeuristicSelectiveGameNode*, BoardHash> &repository, Deleter<HeuristicSelectiveGameNode>& deleter)
+	{
+		removeThisFromRepository(repository);
+		deleter.scheduleDeletion(this);
+		return 1;
 	}
 
 	const BiaisedGameScore biaisedGameScore() const
@@ -66,24 +96,24 @@ public:
 		return _biaisedGameScore;
 	}
 
-	void develop()
+	template <typename EngineType>
+	const size_t develop(EngineType& randomEngine, FixedUnorderedMap<Board, HeuristicSelectiveGameNode*, BoardHash> &repository, FixedUnorderedMap<Board, std::shared_ptr<std::vector<Move const *>>, BoardHash> &legalCache)
 	{
-		if (!_isTerminal)
+		if (_isTerminal)
 		{
-			if (!_isLeaf)
+			return 0;
+		}
+		else
+		{
+			if (_isLeaf)
 			{
-				chosenOne()->develop();
+				return developImmediateChildren(repository, legalCache);
 			}
 			else
 			{
-				developDepth1();
+				return chosenOne(randomEngine)->develop(randomEngine, repository, legalCache);
 			}
 		}
-	}
-
-	void setRoot(const GameSet& gameSet)
-	{
-		_parents.resize(0);
 	}
 
 	std::vector<HeuristicSelectiveGameNode*> children()
@@ -96,7 +126,8 @@ public:
 		return _gameSet;
 	}
 
-	HeuristicSelectiveGameNode * const biaisedChosenOne() const
+	template <typename EngineType>
+	HeuristicSelectiveGameNode * const biaisedChosenOne(EngineType& randomEngine) const
 	{
 		std::vector<HeuristicSelectiveGameNode*> chosens;
 		chosens.reserve(_children.size());
@@ -137,10 +168,11 @@ public:
 			}
 		}
 		std::uniform_int_distribution<int> aDistributor(0, chosens.size() - 1);
-		return chosens[aDistributor(*GENERATOR)];
+		return chosens[aDistributor(randomEngine)];
 	}
 
-	HeuristicSelectiveGameNode * const chosenOne() const
+	template <typename EngineType>
+	HeuristicSelectiveGameNode * const chosenOne(EngineType& randomEngine) const
 	{
 		std::vector<HeuristicSelectiveGameNode*> chosens;
 		chosens.reserve(_children.size());
@@ -152,7 +184,7 @@ public:
 			}
 		}
 		std::uniform_int_distribution<int> aDistributor(0, chosens.size() - 1);
-		return chosens[aDistributor(*GENERATOR)];
+		return chosens[aDistributor(randomEngine)];
 	}
 
 	const bool isTerminal() const
@@ -164,9 +196,6 @@ public:
 	{
 		return _size;
 	}
-
-	static std::minstd_rand0* GENERATOR;
-	static FixedUnorderedMap<Board, HeuristicSelectiveGameNode*, BoardHash> NODES;
 
 private:
 
@@ -196,18 +225,20 @@ private:
 		}
 	}
 
-	void developDepth1()
+	const size_t developImmediateChildren(FixedUnorderedMap<Board, HeuristicSelectiveGameNode*, BoardHash> &repository, FixedUnorderedMap<Board, std::shared_ptr<std::vector<Move const *>>, BoardHash> &legalCache)
 	{
 		_children.reserve(_gameSet.getLegals()->size());
 		size_t addedSize = 0;
+		size_t realAddedSize = 0;
 		for (Move const * const move : *_gameSet.getLegals())
 		{
-			const GameSet child(_gameSet.playMove(*move));
-			HeuristicSelectiveGameNode* childNode(NODES.get(child.currentBoard()).filter([&child](HeuristicSelectiveGameNode* const foundNode) {
+			const GameSet child(_gameSet.playMove(*move, legalCache));
+			HeuristicSelectiveGameNode* childNode(repository.get(child.currentBoard()).filter([&child](HeuristicSelectiveGameNode* const foundNode) {
 				return foundNode->gameSet() == child;
-			}).getOrElse([&child, this]() {
+			}).getOrElse([this, &child, &repository, &realAddedSize]() {
+				++realAddedSize;
 				auto* node = new HeuristicSelectiveGameNode(child, _gameScore, _biaisedGameScore);
-				NODES.set(child.currentBoard(), node);
+				repository.set(child.currentBoard(), node);
 				return node;
 			}));
 			childNode->addParent(this);
@@ -216,6 +247,7 @@ private:
 		}
 		backPropagateSize(addedSize);
 		backPropagateUtility();
+		return realAddedSize;
 	}
 
 	static const double estimateScore(const GameSet &gameSet)
@@ -312,6 +344,15 @@ private:
 		}
 	}
 
+	void removeThisFromRepository(FixedUnorderedMap<Board, HeuristicSelectiveGameNode*, BoardHash> &repository) const
+	{
+		repository.get(gameSet().currentBoard()).filter([this](HeuristicSelectiveGameNode * const foundNode) {
+			return this == foundNode;
+		}).foreach([this, &repository](HeuristicSelectiveGameNode * const foundNode) {
+			repository.remove(gameSet().currentBoard());
+		});
+	}
+
 	GameSet _gameSet;
 	GameScore _gameScore;
 	BiaisedGameScore _biaisedGameScore;
@@ -319,6 +360,6 @@ private:
 	bool _isLeaf;
 	bool _isTerminal;
 	size_t _size;
-	std::vector<HeuristicSelectiveGameNode*> _parents;
+	std::unordered_set<HeuristicSelectiveGameNode*, PointerHash<HeuristicSelectiveGameNode>> _parents;
 	std::vector<HeuristicSelectiveGameNode*> _children;
 };

@@ -1,12 +1,17 @@
 #ifndef GAMEUI_H
 #define GAMEUI_H
 
+#include "../Libraries/Headers/Artificial/Artificial.h"
+#include "../Libraries/Headers/Physics/Point.h"
+
+#include "../Libraries/Headers/utils/RandomEngineGenerator.h"
+
+#include "resource.h"
+
 #include <Windows.h>
 #include <thread>
 #include <random>
-#include "resource.h"
-#include "../Libraries/Headers/Artificial/Artificial.h"
-#include "../Libraries/Headers/Physics/Point.h"
+#include <fstream>
 
 class GameUI
 {
@@ -121,6 +126,7 @@ private:
 	bool _isComputerTurn;
 	bool _isPlayerTurn;
 	std::minstd_rand0* _randomGenerator;
+	RandomEngineGenerator _randomEngineGenerator;
 	bool _isComputerOnly;
 	std::vector<Move const *>* _legals;
 };

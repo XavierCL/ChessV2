@@ -143,6 +143,7 @@
     <ClInclude Include="Headers\Artificial\HeuristicSelectiveNoDepth\HeuristicSelectiveGameTreeND.h" />
     <ClInclude Include="Headers\Artificial\HeuristicSelectiveNoDepth\NodeGameSetND.h" />
     <ClInclude Include="Headers\Artificial\HeuristicSelective\BiaisedGameScore.h" />
+    <ClInclude Include="Headers\Artificial\HeuristicSelective\Deleter.h" />
     <ClInclude Include="Headers\Artificial\HeuristicSelective\GameScore.h" />
     <ClInclude Include="Headers\Artificial\HeuristicSelective\HeuristicSelectiveArtificial.h" />
     <ClInclude Include="Headers\Artificial\HeuristicSelective\HeuristicSelectiveGameNode.h" />
@@ -185,6 +186,7 @@
     <ClInclude Include="Headers\utils\Logger.hpp" />
     <ClInclude Include="Headers\utils\Map.hpp" />
     <ClInclude Include="Headers\utils\Option.hpp" />
+    <ClInclude Include="Headers\utils\RandomEngineGenerator.h" />
     <ClInclude Include="Headers\utils\Set.hpp" />
   </ItemGroup>
   <ItemGroup>
@@ -196,7 +198,6 @@
     <ClCompile Include="Sources\Artificial\HeuristicSelectiveNoDepth\HeuristicSelectiveGameNodeND.cpp" />
     <ClCompile Include="Sources\Artificial\HeuristicSelective\BiaisedGameScore.cpp" />
     <ClCompile Include="Sources\Artificial\HeuristicSelective\GameScore.cpp" />
-    <ClCompile Include="Sources\Artificial\HeuristicSelective\HeuristicSelectiveGameNode.cpp" />
     <ClCompile Include="Sources\Artificial\ProbabilityHeuristicSelective\ProbabilityGameScore.cpp" />
     <ClCompile Include="Sources\Artificial\ProbabilityHeuristicSelective\ProbabilityHeuristicSelectiveGameNode.cpp" />
     <ClCompile Include="Sources\Boards\BitBoardRayConstants.cpp" />
@@ -208,7 +209,6 @@
     <ClCompile Include="Sources\Moves\Effectors\SimpleMove.cpp" />
     <ClCompile Include="Sources\Moves\Effectors\PromotionMove.cpp" />
     <ClCompile Include="Sources\Moves\Factories\BitBoardMoveConstants.cpp" />
-    <ClCompile Include="Sources\Moves\Factories\MoveFactory.cpp" />
     <ClCompile Include="Sources\utils\FastMath.cpp" />
     <ClCompile Include="Sources\utils\Logger.cpp" />
   </ItemGroup>

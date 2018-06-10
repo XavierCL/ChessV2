@@ -177,6 +177,12 @@
     <ClInclude Include="Headers\Artificial\HeuristicSelective\HeuristicSelectiveGameTree.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Headers\utils\RandomEngineGenerator.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Headers\Artificial\HeuristicSelective\Deleter.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Sources\Game\GameSet.cpp">
@@ -206,9 +212,6 @@
     <ClCompile Include="Sources\Boards\CastleFlags.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Sources\Moves\Factories\MoveFactory.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Sources\utils\FastMath.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -222,9 +225,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Sources\Artificial\HeuristicSelective\GameScore.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Sources\Artificial\HeuristicSelective\HeuristicSelectiveGameNode.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Sources\Artificial\ProbabilityHeuristicSelective\ProbabilityHeuristicSelectiveGameNode.cpp">

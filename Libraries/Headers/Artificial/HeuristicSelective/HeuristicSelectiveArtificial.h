@@ -21,11 +21,6 @@ public:
 		_gameTree(GameSet(legalCache), engineGenerator.next(), FixedUnorderedMap<Board, HeuristicSelectiveGameNode*, BoardHash>(1000000), legalCache)
 	{}
 
-	~HeuristicSelectiveArtificial()
-	{
-		_isEnemyTurn = false;
-	}
-
 	Move const * getMove(const GameSet& gameSet) override
 	{
 		const clock_t startTime = clock();

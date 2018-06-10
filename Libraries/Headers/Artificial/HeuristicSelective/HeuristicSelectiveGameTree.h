@@ -11,6 +11,7 @@ public:
 		: _root(new HeuristicSelectiveGameNode(gameSet)),
 		_realNodeCount(1),
 		_thinkingThread(nullptr),
+		_destructing(false),
 		_randomGenerator(randomGenerator),
 		_nodeRepository(nodeRepository),
 		_legalCache(legalCache)
@@ -18,6 +19,7 @@ public:
 
 	~HeuristicSelectiveGameTree()
 	{
+		_destructing = true;
 		waitForThinkingDone();
 		_root->removeRecursive(_nodeRepository, _deleter);
 		_deleter.deleteAll();
@@ -60,10 +62,12 @@ public:
 
 	void waitForThinkingDone()
 	{
+		std::lock_guard<std::mutex> lock(_destructionMutex);
 		if (_thinkingThread)
 		{
 			_thinkingThread->join();
 			delete _thinkingThread;
+			_thinkingThread = nullptr;
 		}
 	}
 
@@ -72,7 +76,7 @@ private:
 	template <typename _PredicateType>
 	void developUntil(const _PredicateType &shouldStop)
 	{
-		while (!shouldStop())
+		while (!shouldStop() && !_destructing)
 		{
 			develop();
 		}
@@ -128,6 +132,8 @@ private:
 
 	size_t _realNodeCount;
 	std::thread* _thinkingThread;
+	bool _destructing;
+	std::mutex _destructionMutex;
 	Deleter<HeuristicSelectiveGameNode> _deleter;
 	std::minstd_rand0 _randomGenerator;
 	FixedUnorderedMap<Board, HeuristicSelectiveGameNode*, BoardHash> _nodeRepository;

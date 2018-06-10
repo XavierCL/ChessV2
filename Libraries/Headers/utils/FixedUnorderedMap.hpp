@@ -4,7 +4,6 @@
 #include "FastMath.hpp"
 
 #include <utility>
-#include <iostream>
 
 template <typename _KeyType, typename _ValueType, typename _KeyHashType>
 class FixedUnorderedMap
@@ -21,9 +20,16 @@ public:
 		_size(other._size),
 		_container(new Option<std::pair<_KeyType, _ValueType>>[other._capacity])
 	{
-		for (size_t index = 0; index < _capacity; ++index)
+		size_t currentSize = 0;
+		size_t currentIndex = 0;
+		while (currentSize < _size)
 		{
-			_container[index] = other._container[index];
+			if (other._container[currentIndex].isDefined())
+			{
+				_container[currentIndex] = other._container[currentIndex];
+				++currentSize;
+			}
+			++currentIndex;
 		}
 	}
 
@@ -85,10 +91,11 @@ public:
 
 private:
 	const size_t _capacity;
+	size_t _size;
 	const _KeyHashType _hasher;
 
 	Option<std::pair<_KeyType, _ValueType>>* const _container;
-	size_t _size;
 };
 
-#include "../../Sources/utils/FixedUnorderedMap.cpp"
+template <typename _KeyType, typename _ValueType, typename _KeyHashType>
+const FixedUnorderedMap<_KeyType, _ValueType, _KeyHashType> FixedUnorderedMap<_KeyType, _ValueType, _KeyHashType>::empty(1);

@@ -430,7 +430,7 @@ void GameUI::startNewGame()
 		}
 		else if (IsDlgButtonChecked(_hwnd, 10) == BST_CHECKED)
 		{
-			_artificial = new HeuristicSelectiveArtificial(1000, 1000000, _randomEngineGenerator, FixedUnorderedMap<Board, std::shared_ptr<std::vector<Move const *>>, BoardHash>(1000000));
+			_artificial = new HeuristicSelectiveArtificial(1000, 700000, _randomEngineGenerator, FixedUnorderedMap<Board, std::shared_ptr<std::vector<Move const *>>, BoardHash>(700000));
 		}
 		else
 		{

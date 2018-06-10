@@ -346,10 +346,11 @@ private:
 
 	void removeThisFromRepository(FixedUnorderedMap<Board, HeuristicSelectiveGameNode*, BoardHash> &repository) const
 	{
-		repository.get(gameSet().currentBoard()).filter([this](HeuristicSelectiveGameNode * const foundNode) {
+		const auto currentBoard = gameSet().currentBoard();
+		repository.get(currentBoard).filter([this](HeuristicSelectiveGameNode * const foundNode) {
 			return this == foundNode;
-		}).foreach([this, &repository](HeuristicSelectiveGameNode * const foundNode) {
-			repository.remove(gameSet().currentBoard());
+		}).foreach([this, &repository, &currentBoard](HeuristicSelectiveGameNode * const foundNode) {
+			repository.remove(currentBoard);
 		});
 	}
 

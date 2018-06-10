@@ -132,9 +132,6 @@
     <ClInclude Include="Headers\utils\FastMath.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Headers\utils\FixedUnorderedMap.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Headers\utils\Logger.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -181,6 +178,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Headers\Artificial\HeuristicSelective\Deleter.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Headers\utils\FixedUnorderedMap.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

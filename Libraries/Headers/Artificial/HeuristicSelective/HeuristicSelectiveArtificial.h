@@ -23,8 +23,6 @@ public:
 
 	Move const * getMove(const GameSet& gameSet) override
 	{
-		const clock_t startTime = clock();
-
 		if (gameSet.currentBoard() == Board())
 		{
 			Logger::info("Starting\n");
@@ -35,6 +33,7 @@ public:
 		printDebugInfo();
 		_gameTree.playMove(gameSet);
 
+		const clock_t startTime = clock(); // The clock is this far in the play because else the AI could miss branch early and the game wouldn't be fun
 		_gameTree.thinkUntil([this, &startTime]() {
 
 			const clock_t promptedTime = clock();

@@ -69,8 +69,9 @@ public:
 		double probabilitySum = 0;
 		if (relativeProbabilityIndex == 0)
 		{
-			double probabilitySum = gameScoreHolders[0]->gameScore()._score;
+			probabilitySum = gameScoreHolders[0]->gameScore()._score;
 		}
+		// else loops starts at one
 
 		_score = gameScoreHolders[0]->gameScore()._score;
 		_averageScore = gameScoreHolders[0]->gameScore()._averageScore;

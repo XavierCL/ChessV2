@@ -95,12 +95,10 @@ private:
 				child->removeParent(_root);
 				if (child->gameSet().currentBoard() == board)
 				{
-					Logger::info("Node " + std::to_string(reinterpret_cast<size_t>(child)) + " new root\n");
 					newRoot = child;
 				}
 				else if(!child->hasParent())
 				{
-					Logger::info("Node " + std::to_string(reinterpret_cast<size_t>(child)) + " removed recursive: deleted branch\n");
 					_realNodeCount -= child->removeRecursive(_nodeRepository, _deleter);
 				}
 			}

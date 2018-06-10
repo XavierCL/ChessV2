@@ -6,9 +6,11 @@
 #include "Deleter.h"
 
 #include "../../utils/Hash.hpp"
+#include "../../utils/Logger.hpp"
 
 #include <random>
 #include <unordered_set>
+#include <string>
 
 // This implementation doesn't support cyclic references
 // This is fine because such board games can't last an infinite number of moves.
@@ -39,6 +41,7 @@ public:
 
 	void addParent(HeuristicSelectiveGameNode * const &parent)
 	{
+		Logger::info("Node " + std::to_string(reinterpret_cast<size_t>(this)) + " added parent " + std::to_string(reinterpret_cast<size_t>(parent)) + "\n");
 		auto thisParent = _parents.find(parent);
 		if (thisParent == _parents.cend())
 		{
@@ -58,6 +61,7 @@ public:
 
 	void removeParent(HeuristicSelectiveGameNode * const &parent)
 	{
+		Logger::info("Node " + std::to_string(reinterpret_cast<size_t>(this)) + " removed parent " + std::to_string(reinterpret_cast<size_t>(parent)) + "\n");
 		auto thisParent = _parents.find(parent);
 		if (thisParent != _parents.cend())
 		{
@@ -77,6 +81,7 @@ public:
 			child->removeParent(this);
 			if (!child->hasParent())
 			{
+				Logger::info("Node " + std::to_string(reinterpret_cast<size_t>(child)) + " removed recursive: no parent\n");
 				removedCount += child->removeRecursive(repository, deleter);
 			}
 		}
@@ -88,6 +93,7 @@ public:
 	{
 		removeThisFromRepository(repository);
 		deleter.scheduleDeletion(this);
+		Logger::info("Node " + std::to_string(reinterpret_cast<size_t>(this)) + " deleted\n");
 		return 1;
 	}
 
@@ -234,11 +240,17 @@ private:
 		{
 			const GameSet child(_gameSet.playMove(*move, legalCache));
 			HeuristicSelectiveGameNode* childNode(repository.get(child.currentBoard()).filter([&child](HeuristicSelectiveGameNode* const foundNode) {
-				return foundNode->gameSet() == child;
+				const bool isRightGameSet = foundNode->gameSet() == child;
+				if (isRightGameSet)
+				{
+					Logger::info("Node " + std::to_string(reinterpret_cast<size_t>(foundNode)) + " reused\n");
+				}
+				return isRightGameSet;
 			}).getOrElse([this, &child, &repository, &realAddedSize]() {
 				++realAddedSize;
 				auto* node = new HeuristicSelectiveGameNode(child, _gameScore, _biaisedGameScore);
 				repository.set(child.currentBoard(), node);
+				Logger::info("Node " + std::to_string(reinterpret_cast<size_t>(node)) + " created\n");
 				return node;
 			}));
 			childNode->addParent(this);

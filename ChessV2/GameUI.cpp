@@ -27,8 +27,11 @@ GameUI::GameUI()
 	_legals = NULL;
 	_isWhiteBottom = true;
 	BitBoardMoveConstants::initialize();
-	Logger::registerInfo([](const std::string& message) {
-		OutputDebugStringA(message.c_str());
+	_debugFile.open("debug.txt", ios::out | ios::app);
+	Logger::registerInfo([this](const std::string& message) {
+		_debugFile << message;
+		_debugFile.flush();
+		// OutputDebugStringA(message.c_str());
 	});
 }
 

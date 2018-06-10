@@ -2,21 +2,23 @@
 
 #include "HeuristicSelectiveGameNode.h"
 
-#include <deque>
+#include <thread>
 
 class HeuristicSelectiveGameTree
 {
 public:
 	HeuristicSelectiveGameTree(const GameSet &gameSet, std::minstd_rand0 randomGenerator, FixedUnorderedMap<Board, HeuristicSelectiveGameNode*, BoardHash> nodeRepository, FixedUnorderedMap<Board, std::shared_ptr<std::vector<Move const *>>, BoardHash> &legalCache)
 		: _root(new HeuristicSelectiveGameNode(gameSet)),
+		_realNodeCount(1),
+		_thinkingThread(nullptr),
 		_randomGenerator(randomGenerator),
 		_nodeRepository(nodeRepository),
-		_legalCache(legalCache),
-		_realNodeCount(1)
+		_legalCache(legalCache)
 	{}
 
 	~HeuristicSelectiveGameTree()
 	{
+		waitForThinkingDone();
 		_root->removeRecursive(_nodeRepository, _deleter);
 		_deleter.deleteAll();
 	}
@@ -50,6 +52,23 @@ public:
 		return _root;
 	}
 
+	template <typename PredicateType>
+	void thinkUntil(const PredicateType &shouldStop)
+	{
+		_thinkingThread = new std::thread(&HeuristicSelectiveGameTree::developUntil<PredicateType>, this, shouldStop);
+	}
+
+	void waitForThinkingDone()
+	{
+		if (_thinkingThread)
+		{
+			_thinkingThread->join();
+			delete _thinkingThread;
+		}
+	}
+
+private:
+
 	template <typename _PredicateType>
 	void developUntil(const _PredicateType &shouldStop)
 	{
@@ -58,8 +77,6 @@ public:
 			develop();
 		}
 	}
-
-private:
 
 	void develop()
 	{
@@ -78,10 +95,12 @@ private:
 				child->removeParent(_root);
 				if (child->gameSet().currentBoard() == board)
 				{
+					Logger::info("Node " + std::to_string(reinterpret_cast<size_t>(child)) + " new root\n");
 					newRoot = child;
 				}
-				else
+				else if(!child->hasParent())
 				{
+					Logger::info("Node " + std::to_string(reinterpret_cast<size_t>(child)) + " removed recursive: deleted branch\n");
 					_realNodeCount -= child->removeRecursive(_nodeRepository, _deleter);
 				}
 			}
@@ -109,9 +128,10 @@ private:
 
 	HeuristicSelectiveGameNode* _root;
 
+	size_t _realNodeCount;
+	std::thread* _thinkingThread;
+	Deleter<HeuristicSelectiveGameNode> _deleter;
 	std::minstd_rand0 _randomGenerator;
 	FixedUnorderedMap<Board, HeuristicSelectiveGameNode*, BoardHash> _nodeRepository;
 	FixedUnorderedMap<Board, std::shared_ptr<std::vector<Move const *>>, BoardHash> _legalCache;
-	Deleter<HeuristicSelectiveGameNode> _deleter;
-	size_t _realNodeCount;
 };

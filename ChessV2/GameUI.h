@@ -129,6 +129,7 @@ private:
 	RandomEngineGenerator _randomEngineGenerator;
 	bool _isComputerOnly;
 	std::vector<Move const *>* _legals;
+	std::ofstream _debugFile;
 };
 
 #endif

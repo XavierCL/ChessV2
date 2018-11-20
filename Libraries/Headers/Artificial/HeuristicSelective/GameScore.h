@@ -26,10 +26,11 @@ public:
 			: CompoundScore::fromBestBlackOf(toScores(children)))
 	{}
 
-	GameScore& operator=(const GameScore &other)
+	void setScore(const std::vector<GameScore> &children, const bool &isWhiteTurn)
 	{
-		_score = other._score;
-		return *this;
+		_score = isWhiteTurn
+			? CompoundScore::fromBestWhiteOf(toScores(children))
+			: CompoundScore::fromBestBlackOf(toScores(children));
 	}
 
 	bool winsOver(const bool &isWhiteTurn, const GameScore& other) const
@@ -39,22 +40,16 @@ public:
 			: _score.blackWinsOver(other._score);
 	}
 
-	bool operator==(const GameScore &other) const
+	bool scoreEquals(const GameScore &other) const
 	{
-		return _depth == other._depth
-			&& _score == other._score;
-	}
-
-	bool operator!=(const GameScore &other) const
-	{
-		return !operator==(other);
+		return _score == other._score;
 	}
 
 	std::vector<CompoundScore> toScores(const std::vector<GameScore> &gameScores)
 	{
 		std::vector<CompoundScore> scores;
 
-		std::transform(gameScores.begin(), gameScores.end(), scores.begin(), [](const GameScore &gameScore)
+		std::transform(gameScores.begin(), gameScores.end(), std::back_inserter(scores), [](const GameScore &gameScore)
 		{
 			return gameScore._score;
 		});

@@ -21,19 +21,13 @@ public:
 		_averageScore(currentBoardScore)
 	{}
 
-	BiaisedGameScore(const std::vector<BiaisedGameScore> &children, const bool &isWhiteTurn)
-		: _depth(children.front()._depth - 1),
-		_score(isWhiteTurn
-			? CompoundScore::fromBestWhiteOf(toScores(children))
-			: CompoundScore::fromBestBlackOf(toScores(children))),
-		_averageScore(CompoundScore::fromAverageOf(toScores(children)))
-	{}
-
-	BiaisedGameScore& operator=(const BiaisedGameScore &other)
+	void setScores(const std::vector<BiaisedGameScore> &children, const bool &isWhiteTurn)
 	{
-		_score = other._score;
-		_averageScore = other._averageScore;
-		return *this;
+		_score = isWhiteTurn
+			? CompoundScore::fromBestWhiteOf(toScores(children))
+			: CompoundScore::fromBestBlackOf(toScores(children));
+
+		_averageScore = CompoundScore::fromAverageOf(toScores(children));
 	}
 
 	bool biaisedWinOver(const bool &isWhiteTurn, const BiaisedGameScore &other) const
@@ -43,16 +37,10 @@ public:
 			: biaisedBlackWinsOver(other);
 	}
 
-	bool operator==(const BiaisedGameScore &other) const
+	bool scoresEquals(const BiaisedGameScore &other) const
 	{
-		return _score == other._score
-			&& _depth == other._depth
-			&& _averageScore == other._averageScore;
-	}
-
-	bool operator!=(const BiaisedGameScore &other) const
-	{
-		return !operator==(other);
+		return _averageScore == other._averageScore
+			&& _score == other._score;
 	}
 
 	double utility() const
@@ -114,7 +102,7 @@ private:
 	{
 		std::vector<CompoundScore> scores;
 
-		std::transform(gameScores.begin(), gameScores.end(), scores.begin(), [](const BiaisedGameScore &gameScore)
+		std::transform(gameScores.begin(), gameScores.end(), std::back_inserter(scores), [](const BiaisedGameScore &gameScore)
 		{
 			return gameScore._score;
 		});

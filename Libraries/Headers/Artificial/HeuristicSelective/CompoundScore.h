@@ -28,6 +28,11 @@ public:
 
 	static CompoundScore fromBestWhiteOf(const std::vector<CompoundScore> &compoundScores)
 	{
+		if (compoundScores.size() < 1)
+		{
+			throw std::exception("Cannot compute best white score of no values");
+		}
+
 		return *std::max_element(compoundScores.begin(), compoundScores.end(), [](const CompoundScore& a, const CompoundScore& b)
 		{
 			return b.whiteWinsOver(a);
@@ -36,6 +41,11 @@ public:
 
 	static CompoundScore fromBestBlackOf(const std::vector<CompoundScore> &compoundScores)
 	{
+		if (compoundScores.size() < 1)
+		{
+			throw std::exception("Cannot compute best black score of no values");
+		}
+
 		return *std::max_element(compoundScores.begin(), compoundScores.end(), [](const CompoundScore& a, const CompoundScore& b)
 		{
 			return b.blackWinsOver(a);
@@ -44,6 +54,11 @@ public:
 
 	static CompoundScore fromAverageOf(const std::vector<CompoundScore> &compoundScores)
 	{
+		if (compoundScores.size() < 1)
+		{
+			throw std::exception("Cannot compute average score of no values");
+		}
+
 		const auto summedBoardScores(std::accumulate(
 			compoundScores.begin(),
 			compoundScores.end(),

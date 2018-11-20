@@ -122,7 +122,6 @@ public:
 	std::shared_ptr<HeuristicSelectiveGameNode> biaisedChosenOne(EngineType& randomEngine) const
 	{
 		std::vector<std::shared_ptr<HeuristicSelectiveGameNode>> chosens{ _children[0] };
-		chosens.reserve(_children.size());
 
 		std::for_each(_children.begin() + 1, _children.end(), [this, &chosens](const std::shared_ptr<HeuristicSelectiveGameNode> &nextCandidate)
 		{
@@ -130,7 +129,7 @@ public:
 			{
 				chosens = { nextCandidate };
 			}
-			else if (nextCandidate->_biaisedGameScore == chosens.front()->_biaisedGameScore)
+			else if (nextCandidate->_biaisedGameScore.scoresEquals(chosens.front()->_biaisedGameScore))
 			{
 				chosens.push_back(nextCandidate);
 			}
@@ -150,14 +149,22 @@ private:
 	template <typename EngineType>
 	std::shared_ptr<HeuristicSelectiveGameNode> chosenOne(EngineType& randomEngine) const
 	{
-		std::vector<std::shared_ptr<HeuristicSelectiveGameNode>> chosens;
-		chosens.reserve(_children.size());
+		if (_isTerminal)
+		{
+			throw std::exception("Queried chosen one when the node was terminal");
+		}
 
-		for (auto child : _children)
-			if (child->_gameScore == _gameScore)
-			{
-				chosens.push_back(child);
-			}
+		std::vector<std::shared_ptr<HeuristicSelectiveGameNode>> chosens;
+		std::copy_if(_children.begin(), _children.end(), std::back_inserter(chosens),
+			[this](const std::shared_ptr<HeuristicSelectiveGameNode> &node)
+		{
+			return _gameScore.scoreEquals(node->_gameScore);
+		});
+
+		if (chosens.size() < 1)
+		{
+			throw std::exception("GameScore didn't equal child's");
+		}
 
 		std::uniform_int_distribution<int> aDistributor(0, chosens.size() - 1);
 		return chosens[aDistributor(randomEngine)];
@@ -171,8 +178,8 @@ private:
 
 		gatherChildrenUtility();
 
-		if (_gameScore != previousGameScore
-			|| _biaisedGameScore != previousBiaisedGameScore
+		if (!_gameScore.scoreEquals(previousGameScore)
+			|| !_biaisedGameScore.scoresEquals(previousBiaisedGameScore)
 			|| _isTerminal != previousIsTerminal)
 		{
 			for (auto parent : _parents)
@@ -249,23 +256,23 @@ private:
 		});
 
 		std::vector<GameScore> nonTerminalGameScores;
-		std::transform(nonTerminalChildren.begin(), nonTerminalChildren.end(), nonTerminalGameScores.begin(), [](const std::shared_ptr<HeuristicSelectiveGameNode>& nonTerminalChild)
+		std::transform(nonTerminalChildren.begin(), nonTerminalChildren.end(), std::back_inserter(nonTerminalGameScores), [](const std::shared_ptr<HeuristicSelectiveGameNode>& nonTerminalChild)
 		{
 			return nonTerminalChild->_gameScore;
 		});
 
 		std::vector<BiaisedGameScore> biaisedGameScores;
-		std::transform(_children.begin(), _children.end(), biaisedGameScores.begin(), [](const std::shared_ptr<HeuristicSelectiveGameNode>& nonTerminalChild)
+		std::transform(_children.begin(), _children.end(), std::back_inserter(biaisedGameScores), [](const std::shared_ptr<HeuristicSelectiveGameNode>& nonTerminalChild)
 		{
 			return nonTerminalChild->_biaisedGameScore;
 		});
 
-		_isTerminal = !nonTerminalChildren.empty();
+		_isTerminal = nonTerminalChildren.empty();
 		if (!_isTerminal)
 		{
-			_gameScore = GameScore(nonTerminalGameScores, _gameSet.isWhiteTurn());
+			_gameScore.setScore(nonTerminalGameScores, _gameSet.isWhiteTurn());
 		}
-		_biaisedGameScore = BiaisedGameScore(biaisedGameScores, _gameSet.isWhiteTurn());
+		_biaisedGameScore.setScores(biaisedGameScores, _gameSet.isWhiteTurn());
 	}
 
 	const GameSet _gameSet;

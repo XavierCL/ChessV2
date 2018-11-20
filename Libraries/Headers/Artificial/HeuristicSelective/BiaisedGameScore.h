@@ -1,139 +1,129 @@
 #pragma once
 
+#include "CompoundScore.h"
+
+#include <vector>
+#include <algorithm>
+
 class BiaisedGameScore
 {
 public:
 
-	BiaisedGameScore()
-		: _boardScore(0),
-		_defasedBoardScore(0),
-		_depth(1),
-		_averageUtility(0)
+	BiaisedGameScore(const double &currentBoardScore)
+		: _depth(1),
+		_score(currentBoardScore),
+		_averageScore(currentBoardScore)
 	{}
 
-	BiaisedGameScore(const double &currentBoardScore, const BiaisedGameScore& parent)
-		: _boardScore(currentBoardScore),
-		_defasedBoardScore(computeDefasedBoardScoreFromParent(currentBoardScore, parent)),
-		_depth(parent._depth + 1),
-		_averageUtility(currentBoardScore)
+	BiaisedGameScore(const double &currentBoardScore, const BiaisedGameScore &parent)
+		: _depth(parent._depth + 1),
+		_score(CompoundScore::fromScoreAndParent(currentBoardScore, parent._score, parent._depth)),
+		_averageScore(currentBoardScore)
 	{}
 
-	BiaisedGameScore(const double &currentBoardScore, const BiaisedGameScore& parent, const double &averageUtility)
-		: _boardScore(currentBoardScore),
-		_defasedBoardScore(computeDefasedBoardScoreFromParent(currentBoardScore, parent)),
-		_depth(parent._depth + 1),
-		_averageUtility(averageUtility)
+	BiaisedGameScore(const std::vector<BiaisedGameScore> &children, const bool &isWhiteTurn)
+		: _depth(children.front()._depth - 1),
+		_score(isWhiteTurn
+			? CompoundScore::fromBestWhiteOf(toScores(children))
+			: CompoundScore::fromBestBlackOf(toScores(children))),
+		_averageScore(CompoundScore::fromAverageOf(toScores(children)))
 	{}
 
-	const bool biaisedWhiteWinsOver(const BiaisedGameScore &other) const
+	BiaisedGameScore& operator=(const BiaisedGameScore &other)
 	{
-		if (_boardScore > other._boardScore)
-		{
-			return true;
-		}
-		else if (_boardScore < other._boardScore)
-		{
-			return false;
-		}
-		else
-		{
-			if (_defasedBoardScore > other._defasedBoardScore)
-			{
-				return true;
-			}
-			else if (_defasedBoardScore < other._defasedBoardScore)
-			{
-				return false;
-			}
-			else
-			{
-				if (_averageUtility > other._averageUtility)
-				{
-					return true;
-				}
-				else
-				{
-					return false;
-				}
-			}
-		}
+		_score = other._score;
+		_averageScore = other._averageScore;
+		return *this;
 	}
 
-	const bool biaisedBlackWinsOver(const BiaisedGameScore &other) const
+	bool biaisedWinOver(const bool &isWhiteTurn, const BiaisedGameScore &other) const
 	{
-		if (_boardScore < other._boardScore)
-		{
-			return true;
-		}
-		else if (_boardScore > other._boardScore)
-		{
-			return false;
-		}
-		else
-		{
-			if (_defasedBoardScore < other._defasedBoardScore)
-			{
-				return true;
-			}
-			else if (_defasedBoardScore > other._defasedBoardScore)
-			{
-				return false;
-			}
-			else
-			{
-				if (_averageUtility < other._averageUtility)
-				{
-					return true;
-				}
-				else
-				{
-					return false;
-				}
-			}
-		}
+		return isWhiteTurn
+			? biaisedWhiteWinsOver(other)
+			: biaisedBlackWinsOver(other);
 	}
 
-	const bool operator==(const BiaisedGameScore& other) const
+	bool operator==(const BiaisedGameScore &other) const
 	{
-		return _boardScore == other._boardScore
-			&& _defasedBoardScore == other._defasedBoardScore
+		return _score == other._score
 			&& _depth == other._depth
-			&& _averageUtility == other._averageUtility;
+			&& _averageScore == other._averageScore;
 	}
 
-	const bool operator!=(const BiaisedGameScore &other) const
+	bool operator!=(const BiaisedGameScore &other) const
 	{
 		return !operator==(other);
 	}
 
-	const double averageUtility() const
+	double utility() const
 	{
-		return _averageUtility;
-	}
-
-	void averageUtility(const double &averageUtility)
-	{
-		_averageUtility = averageUtility;
-	}
-
-	const double utility() const
-	{
-		return (_boardScore + _defasedBoardScore * DEFASED_BIAIS + _averageUtility * AVERAGE_BIAIS) / (1 + DEFASED_BIAIS + AVERAGE_BIAIS);
+		return _score.utility();
 	}
 
 private:
 
-	static const double computeDefasedBoardScoreFromParent(const double &currentBoardScore, const BiaisedGameScore& parent)
+	bool biaisedWhiteWinsOver(const BiaisedGameScore &other) const
 	{
-		return parent._defasedBoardScore + parent._depth * (parent._boardScore - currentBoardScore);
+		if (_score.whiteWinsOver(other._score))
+		{
+			return true;
+		}
+		else if (_score.blackWinsOver(other._score))
+		{
+			return false;
+		}
+		else if (_averageScore.whiteWinsOver(other._averageScore))
+		{
+			return true;
+		}
+		else if (_averageScore.blackWinsOver(other._averageScore))
+		{
+			return false;
+		}
+		else
+		{
+			return false;
+		}
 	}
 
-	static const double AVERAGE_BIAIS;
-	static const double DEFASED_BIAIS;
+	bool biaisedBlackWinsOver(const BiaisedGameScore &other) const
+	{
+		if (_score.blackWinsOver(other._score))
+		{
+			return true;
+		}
+		else if (_score.whiteWinsOver(other._score))
+		{
+			return false;
+		}
+		else if (_averageScore.blackWinsOver(other._averageScore))
+		{
+			return true;
+		}
+		else if (_averageScore.whiteWinsOver(other._averageScore))
+		{
+			return false;
+		}
+		else
+		{
+			return false;
+		}
+	}
 
-	double _boardScore;
-	double _defasedBoardScore;
-	size_t _depth;
+	std::vector<CompoundScore> toScores(const std::vector<BiaisedGameScore> gameScores)
+	{
+		std::vector<CompoundScore> scores;
 
-	double _averageUtility;
+		std::transform(gameScores.begin(), gameScores.end(), scores.begin(), [](const BiaisedGameScore &gameScore)
+		{
+			return gameScore._score;
+		});
+
+		return scores;
+	}
+
+	const size_t _depth;
+
+	CompoundScore _score;
+	CompoundScore _averageScore;
 };

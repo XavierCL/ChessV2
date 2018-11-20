@@ -3,15 +3,17 @@
 #include "HeuristicSelectiveGameNode.h"
 
 #include <thread>
+#include <atomic>
 
 class HeuristicSelectiveGameTree
 {
 public:
-	HeuristicSelectiveGameTree(const GameSet &gameSet, std::minstd_rand0 randomGenerator, FixedUnorderedMap<Board, HeuristicSelectiveGameNode*, BoardHash> nodeRepository, FixedUnorderedMap<Board, std::shared_ptr<std::vector<Move const *>>, BoardHash> &legalCache)
-		: _root(new HeuristicSelectiveGameNode(gameSet)),
+	HeuristicSelectiveGameTree(const GameSet &gameSet, const size_t maxNodeCount, std::minstd_rand0 randomGenerator, FixedUnorderedMap<Board, std::shared_ptr<HeuristicSelectiveGameNode>, BoardHash> nodeRepository, FixedUnorderedMap<Board, std::shared_ptr<std::vector<Move const *>>, BoardHash> &legalCache)
+		: _maxNodeCount(maxNodeCount),
+		_root(new HeuristicSelectiveGameNode(gameSet)),
 		_realNodeCount(1),
 		_thinkingThread(nullptr),
-		_destructing(false),
+		_interrupted(false),
 		_randomGenerator(randomGenerator),
 		_nodeRepository(nodeRepository),
 		_legalCache(legalCache)
@@ -19,37 +21,35 @@ public:
 
 	~HeuristicSelectiveGameTree()
 	{
-		_destructing = true;
+		interruptThinking();
 		waitForThinkingDone();
-		_root->removeRecursive(_nodeRepository, _deleter);
-		_deleter.deleteAll();
 	}
 
 	Move const * const playMove()
 	{
+		interruptThinking();
+		waitForThinkingDone();
+
+		// We don't want no thinking at all to occur due to thread fussyness, forcing it here:
 		develop();
-		HeuristicSelectiveGameNode const * const bestChild = _root->biaisedChosenOne(_randomGenerator);
+
+		const std::shared_ptr<HeuristicSelectiveGameNode> bestChild = _root->biaisedChosenOne(_randomGenerator);
 		auto const * const bestMove = getMoveFromNodeAndNextBoard(*_root, bestChild->gameSet().currentBoard());
-		updateNewRoot(bestChild->gameSet());
+
+		_root = bestChild;
+
 		return bestMove;
 	}
 
 	void playMove(const GameSet &gameSet)
 	{
+		interruptThinking();
+		waitForThinkingDone();
+
 		updateNewRoot(gameSet);
 	}
 
-	const size_t treeSize() const
-	{
-		return _root->size();
-	}
-
-	const size_t realSize() const
-	{
-		return _realNodeCount;
-	}
-
-	HeuristicSelectiveGameNode* const root() const
+	std::shared_ptr<HeuristicSelectiveGameNode> const root() const
 	{
 		return _root;
 	}
@@ -57,18 +57,27 @@ public:
 	template <typename PredicateType>
 	void thinkUntil(const PredicateType &shouldStop)
 	{
-		_thinkingThread = new std::thread(&HeuristicSelectiveGameTree::developUntil<PredicateType>, this, shouldStop);
+		_interrupted = false;
+		_thinkingThread = std::make_unique<std::thread>(&HeuristicSelectiveGameTree::developUntil<PredicateType>, this, shouldStop);
 	}
 
 	void waitForThinkingDone()
 	{
-		std::lock_guard<std::mutex> lock(_destructionMutex);
 		if (_thinkingThread)
 		{
 			_thinkingThread->join();
-			delete _thinkingThread;
-			_thinkingThread = nullptr;
+			_thinkingThread.reset();
 		}
+	}
+
+	void interruptThinking()
+	{
+		_interrupted = true;
+	}
+
+	size_t realNodeCount()
+	{
+		return _realNodeCount;
 	}
 
 private:
@@ -76,7 +85,7 @@ private:
 	template <typename _PredicateType>
 	void developUntil(const _PredicateType &shouldStop)
 	{
-		while (!shouldStop() && !_destructing)
+		while (!shouldStop() && !_interrupted && !_root->isTerminal())
 		{
 			develop();
 		}
@@ -90,52 +99,39 @@ private:
 	void updateNewRoot(const GameSet& gameSet)
 	{
 		develop();
+
 		const Board& board = gameSet.currentBoard();
 		if (_root->gameSet().currentBoard() != board)
 		{
-			HeuristicSelectiveGameNode* newRoot(nullptr);
-			for (auto * child : _root->children())
-			{
-				child->removeParent(_root);
-				if (child->gameSet().currentBoard() == board)
-				{
-					newRoot = child;
-				}
-				else if(!child->hasParent())
-				{
-					_realNodeCount -= child->removeRecursive(_nodeRepository, _deleter);
-				}
-			}
-
-			_realNodeCount -= _root->removeSingle(_nodeRepository, _deleter);
-			_root = newRoot;
-
-			_deleter.deleteAll();
+			_root = _root->findChild(board);
 		}
+
+		develop();
 	}
 
 	Move const * const getMoveFromNodeAndNextBoard(const HeuristicSelectiveGameNode& currentNode, const Board& nextBoard)
 	{
-		Move const * bestMove = nullptr;
 		for (const auto*& move : *currentNode.gameSet().getLegals())
 		{
 			if (move->play(currentNode.gameSet().currentBoard()) == nextBoard)
 			{
-				bestMove = move;
-				break;
+				return move;
 			}
 		}
-		return bestMove;
+		throw std::exception("No move produced the given next board");
 	}
 
-	HeuristicSelectiveGameNode* _root;
+	const size_t _maxNodeCount;
+
+	std::shared_ptr<HeuristicSelectiveGameNode> _root;
 
 	size_t _realNodeCount;
-	std::thread* _thinkingThread;
-	bool _destructing;
-	std::mutex _destructionMutex;
-	Deleter<HeuristicSelectiveGameNode> _deleter;
-	std::minstd_rand0 _randomGenerator;
-	FixedUnorderedMap<Board, HeuristicSelectiveGameNode*, BoardHash> _nodeRepository;
+
+	std::atomic<bool> _interrupted;
+	std::unique_ptr<std::thread> _thinkingThread;
+
+	FixedUnorderedMap<Board, std::shared_ptr<HeuristicSelectiveGameNode>, BoardHash> _nodeRepository;
 	FixedUnorderedMap<Board, std::shared_ptr<std::vector<Move const *>>, BoardHash> _legalCache;
+
+	std::minstd_rand0 _randomGenerator;
 };

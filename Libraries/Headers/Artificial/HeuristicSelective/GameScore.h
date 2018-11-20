@@ -1,120 +1,70 @@
 #pragma once
 
+#include "CompoundScore.h"
+
+#include <vector>
+#include <algorithm>
+
 class GameScore
 {
 public:
 
-	GameScore()
-		: _boardScore(0),
-		_defasedBoardScore(0),
-		_depth(1)
+	GameScore(const double &currentBoardScore)
+		: _depth(1),
+		_score(currentBoardScore)
 	{}
 
 	GameScore(const double &currentBoardScore, const GameScore& parent)
-		: _boardScore(currentBoardScore),
-		_defasedBoardScore(computeDefasedBoardScoreFromParent(currentBoardScore, parent)),
-		_depth(parent._depth + 1)
+		: _depth(parent._depth + 1),
+		_score(CompoundScore::fromScoreAndParent(currentBoardScore, parent._score, parent._depth))
 	{}
 
-	const bool whiteWinsOver(const GameScore &other) const
+	GameScore(const std::vector<GameScore> &children, const bool &isWhiteTurn)
+		: _depth(children.front()._depth - 1),
+		_score(isWhiteTurn
+			? CompoundScore::fromBestWhiteOf(toScores(children))
+			: CompoundScore::fromBestBlackOf(toScores(children)))
+	{}
+
+	GameScore& operator=(const GameScore &other)
 	{
-		if (_boardScore > other._boardScore)
-		{
-			return true;
-		}
-		else if (_boardScore < other._boardScore)
-		{
-			return false;
-		}
-		else
-		{
-			if (_defasedBoardScore > other._defasedBoardScore)
-			{
-				return true;
-			}
-			else if (_defasedBoardScore < other._defasedBoardScore)
-			{
-				return false;
-			}
-			else
-			{
-				if (_depth > other._depth)
-				{
-					return false;
-				}
-				else if (_depth < other._depth)
-				{
-					return true;
-				}
-				else
-				{
-					return false;
-				}
-			}
-		}
+		_score = other._score;
+		return *this;
 	}
 
-	const bool blackWinsOver(const GameScore &other) const
+	bool winsOver(const bool &isWhiteTurn, const GameScore& other) const
 	{
-		if (_boardScore < other._boardScore)
-		{
-			return true;
-		}
-		else if (_boardScore > other._boardScore)
-		{
-			return false;
-		}
-		else
-		{
-			if (_defasedBoardScore < other._defasedBoardScore)
-			{
-				return true;
-			}
-			else if (_defasedBoardScore > other._defasedBoardScore)
-			{
-				return false;
-			}
-			else
-			{
-				if (_depth > other._depth)
-				{
-					return false;
-				}
-				else if (_depth < other._depth)
-				{
-					return true;
-				}
-				else
-				{
-					return false;
-				}
-			}
-		}
+		return isWhiteTurn
+			? _score.whiteWinsOver(other._score)
+			: _score.blackWinsOver(other._score);
 	}
 
-	const bool operator==(const GameScore& other) const
+	bool operator==(const GameScore &other) const
 	{
-		return _boardScore == other._boardScore
-			&& _defasedBoardScore == other._defasedBoardScore
-			&& _depth == other._depth;
+		return _depth == other._depth
+			&& _score == other._score;
 	}
 
-	const bool operator!=(const GameScore &other) const
+	bool operator!=(const GameScore &other) const
 	{
 		return !operator==(other);
 	}
 
-private:
-
-	static const double computeDefasedBoardScoreFromParent(const double &currentBoardScore, const GameScore& parent)
+	std::vector<CompoundScore> toScores(const std::vector<GameScore> &gameScores)
 	{
-		return parent._defasedBoardScore + parent._depth * (parent._boardScore - currentBoardScore);
+		std::vector<CompoundScore> scores;
+
+		std::transform(gameScores.begin(), gameScores.end(), scores.begin(), [](const GameScore &gameScore)
+		{
+			return gameScore._score;
+		});
+
+		return scores;
 	}
 
-	static const double AVERAGE_BIAIS;
-	static const double DEFASED_BIAIS;
+private:
 
-	double _boardScore;
-	double _defasedBoardScore;
-	size_t _depth;
+	const size_t _depth;
+
+	CompoundScore _score;
 };

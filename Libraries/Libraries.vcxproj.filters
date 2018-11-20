@@ -177,10 +177,10 @@
     <ClInclude Include="Headers\utils\RandomEngineGenerator.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Headers\Artificial\HeuristicSelective\Deleter.h">
+    <ClInclude Include="Headers\utils\FixedUnorderedMap.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Headers\utils\FixedUnorderedMap.hpp">
+    <ClInclude Include="Headers\Artificial\HeuristicSelective\CompoundScore.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -219,12 +219,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Sources\utils\Logger.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Sources\Artificial\HeuristicSelective\BiaisedGameScore.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Sources\Artificial\HeuristicSelective\GameScore.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Sources\Artificial\ProbabilityHeuristicSelective\ProbabilityHeuristicSelectiveGameNode.cpp">

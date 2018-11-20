@@ -143,7 +143,7 @@
     <ClInclude Include="Headers\Artificial\HeuristicSelectiveNoDepth\HeuristicSelectiveGameTreeND.h" />
     <ClInclude Include="Headers\Artificial\HeuristicSelectiveNoDepth\NodeGameSetND.h" />
     <ClInclude Include="Headers\Artificial\HeuristicSelective\BiaisedGameScore.h" />
-    <ClInclude Include="Headers\Artificial\HeuristicSelective\Deleter.h" />
+    <ClInclude Include="Headers\Artificial\HeuristicSelective\CompoundScore.h" />
     <ClInclude Include="Headers\Artificial\HeuristicSelective\GameScore.h" />
     <ClInclude Include="Headers\Artificial\HeuristicSelective\HeuristicSelectiveArtificial.h" />
     <ClInclude Include="Headers\Artificial\HeuristicSelective\HeuristicSelectiveGameNode.h" />
@@ -196,8 +196,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Sources\Artificial\HeuristicSelectiveNoDepth\HeuristicSelectiveGameNodeND.cpp" />
-    <ClCompile Include="Sources\Artificial\HeuristicSelective\BiaisedGameScore.cpp" />
-    <ClCompile Include="Sources\Artificial\HeuristicSelective\GameScore.cpp" />
     <ClCompile Include="Sources\Artificial\ProbabilityHeuristicSelective\ProbabilityGameScore.cpp" />
     <ClCompile Include="Sources\Artificial\ProbabilityHeuristicSelective\ProbabilityHeuristicSelectiveGameNode.cpp" />
     <ClCompile Include="Sources\Boards\BitBoardRayConstants.cpp" />

@@ -15,11 +15,11 @@ class HeuristicSelectiveArtificial : public Artificial
 {
 public:
 
-	HeuristicSelectiveArtificial(const unsigned long long &msSelfTime, const size_t &maxNodeCount, std::minstd_rand0 &engine, FixedUnorderedMap<Board, std::shared_ptr<std::vector<Move const *>>, BoardHash> &legalCache)
+	HeuristicSelectiveArtificial(const unsigned long long &msSelfTime, const size_t &maxNodeCount, std::minstd_rand0 &engine, FixedUnorderedMap<Board, std::shared_ptr<HeuristicSelectiveGameNode>, BoardHash> &nodeRepository, FixedUnorderedMap<Board, std::shared_ptr<std::vector<Move const *>>, BoardHash> &legalCache)
 		: _msSelfTime(msSelfTime),
-		_gameTree(GameSet(legalCache), maxNodeCount, engine, FixedUnorderedMap<Board, std::shared_ptr<HeuristicSelectiveGameNode>, BoardHash>(1000000), legalCache)
+		_gameTree(GameSet(legalCache), maxNodeCount, engine, nodeRepository, legalCache)
 	{
-		printDebugInfo();
+		printDebugInfo("Constructor");
 
 		_gameTree.thinkUntil([] { return false; });
 	}
@@ -29,21 +29,22 @@ public:
 		_gameTree.interruptThinking();
 		_gameTree.waitForThinkingDone();
 
-		printDebugInfo();
+		printDebugInfo("Destructor");
 	}
 
 	Move const * getMove(const GameSet& gameSet) override
 	{
-		_gameTree.interruptThinking();
-		_gameTree.waitForThinkingDone();
-		printDebugInfo();
-
 		if (gameSet.currentBoard() == Board())
 		{
 			Logger::info("Starting\n");
 		}
 
+		_gameTree.interruptThinking();
+		_gameTree.waitForThinkingDone();
+		printDebugInfo("Thought during enemy turn");
+
 		_gameTree.playMove(gameSet);
+		printDebugInfo("Played enemy move");
 
 		// The clock is this far in the play because else the AI could miss branch early and the game wouldn't be fun
 		const clock_t startTime = clock();
@@ -57,9 +58,10 @@ public:
 		});
 
 		_gameTree.waitForThinkingDone();
-		printDebugInfo();
+		printDebugInfo("Thought during my turn");
 
 		auto selectedMove(_gameTree.playMove());
+		printDebugInfo("Played my move");
 
 		_gameTree.thinkUntil([] { return false; });
 
@@ -71,11 +73,12 @@ private:
 
 	HeuristicSelectiveGameTree _gameTree;
 
-	void printDebugInfo()
+	void printDebugInfo(const std::string title)
 	{
-		Logger::info("Is white: " + std::to_string(_gameTree.root()->gameSet().isWhiteTurn()) + "\n"
-			+ "Utility : " + std::to_string(_gameTree.root()->biaisedGameScoreUtility()) + "\n\n"
-			+ "Checked node count : " + std::to_string(_gameTree.root()->size()) + "\n\n"
+		Logger::info(std::to_string((size_t)this) + ": " + title + "\n"
+			+ "Is white: " + std::to_string(_gameTree.root()->gameSet().isWhiteTurn()) + "\n"
+			+ "Utility : " + std::to_string(_gameTree.root()->biaisedGameScoreUtility()) + "\n"
+			+ "Checked node count : " + std::to_string(_gameTree.root()->size()) + "\n"
 			+ "Real node count : " + std::to_string(_gameTree.realNodeCount()) + "\n\n");
 	}
 };

@@ -430,13 +430,29 @@ void GameUI::startNewGame()
 		}
 		else if (IsDlgButtonChecked(_hwnd, 10) == BST_CHECKED)
 		{
-			_artificial = new HeuristicSelectiveArtificial(1000, 700000, _randomEngineGenerator.next(), FixedUnorderedMap<Board, std::shared_ptr<std::vector<Move const *>>, BoardHash>(700000));
+			_artificial = new HeuristicSelectiveArtificial(
+				5000,
+				700000,
+				_randomEngineGenerator.next(),
+				FixedUnorderedMap<Board, std::shared_ptr<HeuristicSelectiveGameNode>, BoardHash>(1000000),
+				FixedUnorderedMap<Board, std::shared_ptr<std::vector<Move const *>>, BoardHash>(1000000)
+			);
 		}
 		else
 		{
 			_artificial = new ProbabilityHeuristicSelectiveArtificial(7000, 1, 1000000000, _randomGenerator);
 		}
-		_artificial2 = new HeuristicSelectiveArtificial(7000, 20000, _randomEngineGenerator.next(), FixedUnorderedMap<Board, std::shared_ptr<std::vector<Move const *>>, BoardHash>(1000000));
+		if (_isComputerOnly)
+		{
+			_artificial2 = new HeuristicSelectiveArtificial(7000, 20000, _randomEngineGenerator.next(), FixedUnorderedMap<Board, std::shared_ptr<HeuristicSelectiveGameNode>, BoardHash>(1000000), FixedUnorderedMap<Board, std::shared_ptr<std::vector<Move const *>>, BoardHash>(1000000));
+		}
+		if (!_isComputerWhite)
+		{
+			// _artificial is always white, so when we only have 1 artificial and it's black, we have to switch the artificial definitions
+			Artificial* temp = _artificial;
+			_artificial = _artificial2;
+			_artificial2 = temp;
+		}
 	}
 	else
 	{

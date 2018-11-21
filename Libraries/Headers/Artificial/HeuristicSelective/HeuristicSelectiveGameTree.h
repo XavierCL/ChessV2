@@ -30,13 +30,14 @@ public:
 		interruptThinking();
 		waitForThinkingDone();
 
-		// We don't want no thinking at all to occur due to thread fussyness, forcing it here:
+		// We don't want no thinking at all to occur due to thread fussyness, forcing it here
 		develop();
 
-		const std::shared_ptr<HeuristicSelectiveGameNode> bestChild = _root->biaisedChosenOne(_randomGenerator);
-		auto const * const bestMove = getMoveFromNodeAndNextBoard(*_root, bestChild->gameSet().currentBoard());
+		const auto bestNode(_root->biaisedChosenOne(_randomGenerator));
+		const GameSet bestGameSet(bestNode->gameSet());
+		const auto bestMove(getMoveFromNodeAndNextBoard(*_root, bestGameSet.currentBoard()));
 
-		_root = bestChild;
+		updateNewRoot(bestGameSet);
 
 		return bestMove;
 	}
@@ -85,7 +86,7 @@ private:
 	template <typename _PredicateType>
 	void developUntil(const _PredicateType &shouldStop)
 	{
-		while (!shouldStop() && !_interrupted && !_root->isTerminal())
+		while (!shouldStop() && !_interrupted && !_root->isTerminal() && _maxNodeCount >= _realNodeCount)
 		{
 			develop();
 		}
@@ -98,20 +99,23 @@ private:
 
 	void updateNewRoot(const GameSet& gameSet)
 	{
+		// We don't want no thinking at all to occur due to thread fussyness, forcing it here
 		develop();
 
 		const Board& board = gameSet.currentBoard();
 		if (_root->gameSet().currentBoard() != board)
 		{
-			_root = _root->findChild(board);
-		}
+			const auto nextRoot = _root->findChild(board);
 
-		develop();
+			_realNodeCount -= _root->removeAllBut(nextRoot, _nodeRepository);
+			_root = nextRoot;
+			_root->makeRoot();
+		}
 	}
 
 	Move const * const getMoveFromNodeAndNextBoard(const HeuristicSelectiveGameNode& currentNode, const Board& nextBoard)
 	{
-		for (const auto*& move : *currentNode.gameSet().getLegals())
+		for (const auto &move : *currentNode.gameSet().getLegals())
 		{
 			if (move->play(currentNode.gameSet().currentBoard()) == nextBoard)
 			{

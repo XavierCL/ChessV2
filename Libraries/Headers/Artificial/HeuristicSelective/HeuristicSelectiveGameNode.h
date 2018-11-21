@@ -13,36 +13,54 @@
 // This implementation doesn't support cyclic references
 // This is fine because supported board games can't last an infinite number of moves.
 
+static size_t CREATED = 0;
+static size_t DELETED = 0;
+
 class HeuristicSelectiveGameNode
 {
 public:
 
 	HeuristicSelectiveGameNode(const GameSet &gameSet)
 		: _gameSet(gameSet),
-		_parents(),
 		_isLeaf(true),
 		_isTerminal(gameSet.getStatus() != GameStatus::LIVE),
 		_size(1),
 		_gameScore(estimateScore(gameSet)),
 		_biaisedGameScore(estimateScore(gameSet))
-	{}
+	{
+		++CREATED;
+	}
 
 	HeuristicSelectiveGameNode(const GameSet &gameSet, const GameScore &parentGameScore, const BiaisedGameScore &parentBiaisedGameScore)
 		: _gameSet(gameSet),
-		_parents(),
 		_isLeaf(true),
 		_isTerminal(gameSet.getStatus() != GameStatus::LIVE),
 		_size(1),
 		_gameScore(GameScore(estimateScore(gameSet), parentGameScore)),
 		_biaisedGameScore(BiaisedGameScore(estimateScore(gameSet), parentBiaisedGameScore))
-	{}
+	{
+		++CREATED;
+	}
 
 	~HeuristicSelectiveGameNode()
 	{
+		++DELETED;
+	}
+
+	size_t removeAllBut(const std::shared_ptr<HeuristicSelectiveGameNode> &kept, FixedUnorderedMap<Board, std::shared_ptr<HeuristicSelectiveGameNode>, BoardHash> &repository)
+	{
+		size_t removedCount = 1;
+
 		for (const auto child : _children)
 		{
-			child->removeParent(this);
+			if (child != kept)
+			{
+				removedCount += child->removeParent(this, repository);
+			}
 		}
+		repository.remove(_gameSet.currentBoard());
+
+		return removedCount;
 	}
 
 	void addParent(HeuristicSelectiveGameNode* parent)
@@ -58,20 +76,12 @@ public:
 		}
 	}
 
-	void removeParent(HeuristicSelectiveGameNode* parent)
+	void makeRoot()
 	{
-		auto thisParent = _parents.find(parent);
-		if (thisParent != _parents.cend())
-		{
-			_parents.erase(thisParent);
-		}
-		else
-		{
-			throw std::exception("Node parent did not exist or was already removed");
-		}
+		_parents.clear();
 	}
 
-	size_t size()
+	size_t size() const
 	{
 		return _size;
 	}
@@ -101,9 +111,9 @@ public:
 		}
 	}
 
-	std::shared_ptr<HeuristicSelectiveGameNode> findChild(const Board& board)
+	std::shared_ptr<HeuristicSelectiveGameNode> findChild(const Board& board) const
 	{
-		for (auto child : _children)
+		for (const auto child : _children)
 		{
 			if (child->gameSet().currentBoard() == board)
 			{
@@ -172,27 +182,18 @@ private:
 
 	void backPropagateUtility()
 	{
-		const GameScore previousGameScore = _gameScore;
-		const BiaisedGameScore previousBiaisedGameScore = _biaisedGameScore;
-		const bool previousIsTerminal = _isTerminal;
-
+		// Ommiting same gameScores optimizations, since we want to update the size backward
 		gatherChildrenUtility();
 
-		if (!_gameScore.scoreEquals(previousGameScore)
-			|| !_biaisedGameScore.scoresEquals(previousBiaisedGameScore)
-			|| _isTerminal != previousIsTerminal)
+		for (auto parent : _parents)
 		{
-			for (auto parent : _parents)
-			{
-				parent->backPropagateUtility();
-			}
+			parent->backPropagateUtility();
 		}
 	}
 
 	size_t developImmediateChildren(FixedUnorderedMap<Board, std::shared_ptr<HeuristicSelectiveGameNode>, BoardHash> &repository, FixedUnorderedMap<Board, std::shared_ptr<std::vector<Move const *>>, BoardHash> &legalCache)
 	{
 		size_t realNewNodeCount = 0;
-		_children.reserve(_gameSet.getLegals()->size());
 		for (Move const * const move : *_gameSet.getLegals())
 		{
 			const GameSet child(_gameSet.playMove(*move, legalCache));
@@ -211,6 +212,11 @@ private:
 		}
 
 		_isLeaf = false;
+
+		if (_children.size() == 0)
+		{
+			throw std::exception("Developped children size was 0");
+		}
 
 		backPropagateUtility();
 
@@ -267,12 +273,55 @@ private:
 			return nonTerminalChild->_biaisedGameScore;
 		});
 
+		_size = std::accumulate(_children.begin(), _children.end(), 1,
+			[](const size_t &size, const std::shared_ptr<HeuristicSelectiveGameNode> &node) {
+			return size + node->_size;
+		});
 		_isTerminal = nonTerminalChildren.empty();
 		if (!_isTerminal)
 		{
 			_gameScore.setScore(nonTerminalGameScores, _gameSet.isWhiteTurn());
 		}
 		_biaisedGameScore.setScores(biaisedGameScores, _gameSet.isWhiteTurn());
+	}
+
+	size_t removeParent(HeuristicSelectiveGameNode* parent, FixedUnorderedMap<Board, std::shared_ptr<HeuristicSelectiveGameNode>, BoardHash> &repository)
+	{
+		size_t removedCount = 0;
+
+		auto thisParent = _parents.find(parent);
+		if (thisParent != _parents.cend())
+		{
+			_parents.erase(thisParent);
+
+			if (_parents.size() == 0)
+			{
+				++removedCount;
+				for (const auto &child : _children)
+				{
+					removedCount += child->removeParent(this, repository);
+				}
+
+				// Avoids the second shared_ptr destruction pass
+				_children.clear();
+
+				bool isSameNodeInCache = repository.get(_gameSet.currentBoard()).filter([this](const std::shared_ptr<HeuristicSelectiveGameNode>& cachedSelf)
+				{
+					return cachedSelf.get() == this;
+				}).isDefined();
+
+				if (isSameNodeInCache)
+				{
+					repository.remove(_gameSet.currentBoard());
+				}
+			}
+		}
+		else
+		{
+			throw std::exception("Node parent did not exist or was already removed");
+		}
+
+		return removedCount;
 	}
 
 	const GameSet _gameSet;

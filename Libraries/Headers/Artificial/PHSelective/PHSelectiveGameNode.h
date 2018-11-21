@@ -1,8 +1,8 @@
 #pragma once
 
 #include "../../Game/GameSet.h"
-#include "GameScore.h"
-#include "BiaisedGameScore.h"
+#include "PHGameScore.h"
+#include "PHBiaisedGameScore.h"
 
 #include "../../utils/Hash.hpp"
 
@@ -13,11 +13,11 @@
 // This implementation doesn't support cyclic references
 // This is fine because supported board games can't last an infinite number of moves.
 
-class HeuristicSelectiveGameNode
+class PHSelectiveGameNode
 {
 public:
 
-	HeuristicSelectiveGameNode(const GameSet &gameSet)
+	PHSelectiveGameNode(const GameSet &gameSet)
 		: _gameSet(gameSet),
 		_isLeaf(true),
 		_isTerminal(gameSet.getStatus() != GameStatus::LIVE),
@@ -26,16 +26,16 @@ public:
 		_biaisedGameScore(estimateScore(gameSet))
 	{}
 
-	HeuristicSelectiveGameNode(const GameSet &gameSet, const GameScore &parentGameScore, const BiaisedGameScore &parentBiaisedGameScore)
+	PHSelectiveGameNode(const GameSet &gameSet, const PHGameScore &parentGameScore, const PHBiaisedGameScore &parentBiaisedGameScore)
 		: _gameSet(gameSet),
 		_isLeaf(true),
 		_isTerminal(gameSet.getStatus() != GameStatus::LIVE),
 		_size(1),
-		_gameScore(GameScore(estimateScore(gameSet), parentGameScore)),
-		_biaisedGameScore(BiaisedGameScore(estimateScore(gameSet), parentBiaisedGameScore))
+		_gameScore(PHGameScore(estimateScore(gameSet), parentGameScore)),
+		_biaisedGameScore(PHBiaisedGameScore(estimateScore(gameSet), parentBiaisedGameScore))
 	{}
 
-	size_t removeAllBut(const std::shared_ptr<HeuristicSelectiveGameNode> &kept, FixedUnorderedMap<Board, std::shared_ptr<HeuristicSelectiveGameNode>, BoardHash> &repository)
+	size_t removeAllBut(const std::shared_ptr<PHSelectiveGameNode> &kept, FixedUnorderedMap<Board, std::shared_ptr<PHSelectiveGameNode>, BoardHash> &repository)
 	{
 		size_t removedCount = 1;
 
@@ -51,7 +51,7 @@ public:
 		return removedCount;
 	}
 
-	void addParent(HeuristicSelectiveGameNode* parent)
+	void addParent(PHSelectiveGameNode* parent)
 	{
 		auto thisParent = _parents.find(parent);
 		if (thisParent == _parents.cend())
@@ -80,7 +80,7 @@ public:
 	}
 
 	template <typename EngineType>
-	size_t develop(EngineType& randomEngine, FixedUnorderedMap<Board, std::shared_ptr<HeuristicSelectiveGameNode>, BoardHash> &repository, FixedUnorderedMap<Board, std::shared_ptr<std::vector<Move const *>>, BoardHash> &legalCache)
+	size_t develop(EngineType& randomEngine, FixedUnorderedMap<Board, std::shared_ptr<PHSelectiveGameNode>, BoardHash> &repository, FixedUnorderedMap<Board, std::shared_ptr<std::vector<Move const *>>, BoardHash> &legalCache)
 	{
 		if (_isTerminal)
 		{
@@ -99,7 +99,7 @@ public:
 		}
 	}
 
-	std::shared_ptr<HeuristicSelectiveGameNode> findChild(const Board& board) const
+	std::shared_ptr<PHSelectiveGameNode> findChild(const Board& board) const
 	{
 		for (const auto child : _children)
 		{
@@ -117,11 +117,11 @@ public:
 	}
 
 	template <typename EngineType>
-	std::shared_ptr<HeuristicSelectiveGameNode> biaisedChosenOne(EngineType& randomEngine) const
+	std::shared_ptr<PHSelectiveGameNode> biaisedChosenOne(EngineType& randomEngine) const
 	{
-		std::vector<std::shared_ptr<HeuristicSelectiveGameNode>> chosens{ _children[0] };
+		std::vector<std::shared_ptr<PHSelectiveGameNode>> chosens{ _children[0] };
 
-		std::for_each(_children.begin() + 1, _children.end(), [this, &chosens](const std::shared_ptr<HeuristicSelectiveGameNode> &nextCandidate)
+		std::for_each(_children.begin() + 1, _children.end(), [this, &chosens](const std::shared_ptr<PHSelectiveGameNode> &nextCandidate)
 		{
 			if (nextCandidate->_biaisedGameScore.biaisedWinOver(_gameSet.isWhiteTurn(), chosens.front()->_biaisedGameScore))
 			{
@@ -145,16 +145,16 @@ public:
 private:
 
 	template <typename EngineType>
-	std::shared_ptr<HeuristicSelectiveGameNode> chosenOne(EngineType& randomEngine) const
+	std::shared_ptr<PHSelectiveGameNode> chosenOne(EngineType& randomEngine) const
 	{
 		if (_isTerminal)
 		{
 			throw std::exception("Queried chosen one when the node was terminal");
 		}
 
-		std::vector<std::shared_ptr<HeuristicSelectiveGameNode>> chosens;
+		std::vector<std::shared_ptr<PHSelectiveGameNode>> chosens;
 		std::copy_if(_children.begin(), _children.end(), std::back_inserter(chosens),
-			[this](const std::shared_ptr<HeuristicSelectiveGameNode> &node)
+			[this](const std::shared_ptr<PHSelectiveGameNode> &node)
 		{
 			return _gameScore.scoreEquals(node->_gameScore);
 		});
@@ -179,17 +179,17 @@ private:
 		}
 	}
 
-	size_t developImmediateChildren(FixedUnorderedMap<Board, std::shared_ptr<HeuristicSelectiveGameNode>, BoardHash> &repository, FixedUnorderedMap<Board, std::shared_ptr<std::vector<Move const *>>, BoardHash> &legalCache)
+	size_t developImmediateChildren(FixedUnorderedMap<Board, std::shared_ptr<PHSelectiveGameNode>, BoardHash> &repository, FixedUnorderedMap<Board, std::shared_ptr<std::vector<Move const *>>, BoardHash> &legalCache)
 	{
 		size_t realNewNodeCount = 0;
 		for (Move const * const move : *_gameSet.getLegals())
 		{
 			const GameSet child(_gameSet.playMove(*move, legalCache));
 
-			std::shared_ptr<HeuristicSelectiveGameNode> childNode(repository.get(child.currentBoard()).filter([&child](const std::shared_ptr<HeuristicSelectiveGameNode> &foundNode) {
+			std::shared_ptr<PHSelectiveGameNode> childNode(repository.get(child.currentBoard()).filter([&child](const std::shared_ptr<PHSelectiveGameNode> &foundNode) {
 				return foundNode->gameSet() == child;
 			}).getOrElse([this, &child, &repository, &realNewNodeCount]() {
-				const auto node = std::make_shared<HeuristicSelectiveGameNode>(child, _gameScore, _biaisedGameScore);
+				const auto node = std::make_shared<PHSelectiveGameNode>(child, _gameScore, _biaisedGameScore);
 				++realNewNodeCount;
 				repository.set(child.currentBoard(), node);
 				return node;
@@ -244,25 +244,25 @@ private:
 	void gatherChildrenUtility()
 	{
 		auto nonTerminalChildren(_children);
-		nonTerminalChildren.erase(std::remove_if(nonTerminalChildren.begin(), nonTerminalChildren.end(), [](const std::shared_ptr<HeuristicSelectiveGameNode>& child)
+		nonTerminalChildren.erase(std::remove_if(nonTerminalChildren.begin(), nonTerminalChildren.end(), [](const std::shared_ptr<PHSelectiveGameNode>& child)
 		{
 			return child->isTerminal();
 		}), nonTerminalChildren.end());
 
-		std::vector<GameScore> nonTerminalGameScores;
-		std::transform(nonTerminalChildren.begin(), nonTerminalChildren.end(), std::back_inserter(nonTerminalGameScores), [](const std::shared_ptr<HeuristicSelectiveGameNode>& nonTerminalChild)
+		std::vector<PHGameScore> nonTerminalGameScores;
+		std::transform(nonTerminalChildren.begin(), nonTerminalChildren.end(), std::back_inserter(nonTerminalGameScores), [](const std::shared_ptr<PHSelectiveGameNode>& nonTerminalChild)
 		{
 			return nonTerminalChild->_gameScore;
 		});
 
-		std::vector<BiaisedGameScore> biaisedGameScores;
-		std::transform(_children.begin(), _children.end(), std::back_inserter(biaisedGameScores), [](const std::shared_ptr<HeuristicSelectiveGameNode>& nonTerminalChild)
+		std::vector<PHBiaisedGameScore> biaisedGameScores;
+		std::transform(_children.begin(), _children.end(), std::back_inserter(biaisedGameScores), [](const std::shared_ptr<PHSelectiveGameNode>& nonTerminalChild)
 		{
 			return nonTerminalChild->_biaisedGameScore;
 		});
 
 		_size = std::accumulate(_children.begin(), _children.end(), 1,
-			[](const size_t &size, const std::shared_ptr<HeuristicSelectiveGameNode> &node) {
+			[](const size_t &size, const std::shared_ptr<PHSelectiveGameNode> &node) {
 			return size + node->_size;
 		});
 		_isTerminal = nonTerminalChildren.empty();
@@ -273,7 +273,7 @@ private:
 		_biaisedGameScore.setScores(biaisedGameScores, _gameSet.isWhiteTurn());
 	}
 
-	size_t removeParent(HeuristicSelectiveGameNode* parent, FixedUnorderedMap<Board, std::shared_ptr<HeuristicSelectiveGameNode>, BoardHash> &repository)
+	size_t removeParent(PHSelectiveGameNode* parent, FixedUnorderedMap<Board, std::shared_ptr<PHSelectiveGameNode>, BoardHash> &repository)
 	{
 		size_t removedCount = 0;
 
@@ -293,7 +293,7 @@ private:
 				// Avoids the second shared_ptr destruction pass
 				_children.clear();
 
-				bool isSameNodeInCache = repository.get(_gameSet.currentBoard()).filter([this](const std::shared_ptr<HeuristicSelectiveGameNode>& cachedSelf)
+				bool isSameNodeInCache = repository.get(_gameSet.currentBoard()).filter([this](const std::shared_ptr<PHSelectiveGameNode>& cachedSelf)
 				{
 					return cachedSelf.get() == this;
 				}).isDefined();
@@ -314,12 +314,12 @@ private:
 
 	const GameSet _gameSet;
 
-	BiaisedGameScore _biaisedGameScore;
-	GameScore _gameScore;
+	PHBiaisedGameScore _biaisedGameScore;
+	PHGameScore _gameScore;
 
 	bool _isLeaf;
 	bool _isTerminal;
 	size_t _size;
-	std::unordered_set<HeuristicSelectiveGameNode*, PointerHash<HeuristicSelectiveGameNode>> _parents;
-	std::vector<std::shared_ptr<HeuristicSelectiveGameNode>> _children;
+	std::unordered_set<PHSelectiveGameNode*, PointerHash<PHSelectiveGameNode>> _parents;
+	std::vector<std::shared_ptr<PHSelectiveGameNode>> _children;
 };

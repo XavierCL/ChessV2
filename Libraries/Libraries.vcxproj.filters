@@ -171,6 +171,24 @@
     <ClInclude Include="Headers\Artificial\HeuristicSelective\CompoundScore.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Headers\Artificial\PHSelective\PHSelectiveArtificial.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Headers\Artificial\PHSelective\PHSelectiveGameNode.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Headers\Artificial\PHSelective\PHSelectiveGameTree.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Headers\Artificial\PHSelective\PHCompoundScore.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Headers\Artificial\PHSelective\PHBiaisedGameScore.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Headers\Artificial\PHSelective\PHGameScore.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Sources\Game\GameSet.cpp">

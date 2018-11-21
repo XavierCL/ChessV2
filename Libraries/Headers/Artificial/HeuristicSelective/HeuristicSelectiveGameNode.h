@@ -250,10 +250,10 @@ private:
 	void gatherChildrenUtility()
 	{
 		auto nonTerminalChildren(_children);
-		std::remove_if(nonTerminalChildren.begin(), nonTerminalChildren.end(), [](const std::shared_ptr<HeuristicSelectiveGameNode>& child)
+		nonTerminalChildren.erase(std::remove_if(nonTerminalChildren.begin(), nonTerminalChildren.end(), [](const std::shared_ptr<HeuristicSelectiveGameNode>& child)
 		{
 			return child->isTerminal();
-		});
+		}), nonTerminalChildren.end());
 
 		std::vector<GameScore> nonTerminalGameScores;
 		std::transform(nonTerminalChildren.begin(), nonTerminalChildren.end(), std::back_inserter(nonTerminalGameScores), [](const std::shared_ptr<HeuristicSelectiveGameNode>& nonTerminalChild)

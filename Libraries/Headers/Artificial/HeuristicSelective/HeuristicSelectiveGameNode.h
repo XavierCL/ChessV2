@@ -88,7 +88,7 @@ public:
 
 	double biaisedGameScoreUtility() const
 	{
-		return _biaisedGameScore.utility();
+		return _biaisedGameScore.biaisedUtility();
 	}
 
 	template <typename EngineType>

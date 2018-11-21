@@ -43,9 +43,10 @@ public:
 			&& _score == other._score;
 	}
 
-	double utility() const
+	double biaisedUtility() const
 	{
-		return _score.utility();
+		const double averageUtility = _averageScore.utility();
+		return _score.utility() + 0.5 * (averageUtility / (1 + abs(averageUtility)));
 	}
 
 private:

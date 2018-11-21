@@ -4,7 +4,6 @@
 #include "../Libraries/Headers/Artificial/BruteRecurseArtificial.h"
 #include "../Libraries/Headers/Artificial/HeuristicSelective/HeuristicSelectiveArtificial.h"
 #include "../Libraries/Headers/Artificial/HeuristicSelectiveNoDepth/HeuristicSelectiveArtificialND.h"
-#include "../Libraries/Headers/Artificial/ProbabilityHeuristicSelective/ProbabilityHeuristicSelectiveArtificial.h"
 
 #include <ctime>
 
@@ -440,7 +439,13 @@ void GameUI::startNewGame()
 		}
 		else
 		{
-			_artificial = new ProbabilityHeuristicSelectiveArtificial(7000, 1, 1000000000, _randomGenerator);
+			_artificial = new HeuristicSelectiveArtificial(
+				7000,
+				700000,
+				_randomEngineGenerator.next(),
+				FixedUnorderedMap<Board, std::shared_ptr<HeuristicSelectiveGameNode>, BoardHash>(1000000),
+				FixedUnorderedMap<Board, std::shared_ptr<std::vector<Move const *>>, BoardHash>(1000000)
+			);
 		}
 		if (_isComputerOnly)
 		{

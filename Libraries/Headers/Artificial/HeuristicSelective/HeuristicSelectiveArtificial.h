@@ -18,7 +18,19 @@ public:
 	HeuristicSelectiveArtificial(const unsigned long long &msSelfTime, const size_t &maxNodeCount, std::minstd_rand0 &engine, FixedUnorderedMap<Board, std::shared_ptr<std::vector<Move const *>>, BoardHash> &legalCache)
 		: _msSelfTime(msSelfTime),
 		_gameTree(GameSet(legalCache), maxNodeCount, engine, FixedUnorderedMap<Board, std::shared_ptr<HeuristicSelectiveGameNode>, BoardHash>(1000000), legalCache)
-	{}
+	{
+		printDebugInfo();
+
+		_gameTree.thinkUntil([] { return false; });
+	}
+
+	virtual ~HeuristicSelectiveArtificial()
+	{
+		_gameTree.interruptThinking();
+		_gameTree.waitForThinkingDone();
+
+		printDebugInfo();
+	}
 
 	Move const * getMove(const GameSet& gameSet) override
 	{

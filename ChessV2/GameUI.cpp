@@ -728,7 +728,8 @@ GameUI::~GameUI()
 {
 	DeleteObject(_backGroundBitmap);
 	if (_gameSet)delete _gameSet;
-	if(_artificial)delete _artificial;
+	if (_artificial)delete _artificial;
+	if (_artificial2) delete _artificial2;
 	delete _randomGenerator;
 	DeleteObject(white);
 	DeleteObject(darkBrown);

@@ -30,7 +30,7 @@ public:
 		_averageScore = PHCompoundScore::fromAverageOf(toScores(children));
 	}
 
-	bool biaisedWinOver(const bool &isWhiteTurn, const PHBiaisedGameScore &other) const
+	bool biaisedWinOver(const PHBiaisedGameScore &other, const bool &isWhiteTurn) const
 	{
 		return isWhiteTurn
 			? biaisedWhiteWinsOver(other)
@@ -46,7 +46,7 @@ public:
 	double biaisedUtility() const
 	{
 		const double averageUtility = _averageScore.utility();
-		return _score.utility() + 0.5 * (averageUtility / (1 + abs(averageUtility)));
+		return _score.utility() + 0.3 * averageUtility;
 	}
 
 private:

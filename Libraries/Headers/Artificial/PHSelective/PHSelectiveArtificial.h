@@ -74,7 +74,7 @@ private:
 
 	void printDebugInfo(const std::string title)
 	{
-		Logger::info(std::to_string((size_t)this) + ": " + title + "\n"
+		Logger::trace(std::to_string((size_t)this) + ": " + title + "\n"
 			+ "Is white: " + std::to_string(_gameTree.root()->gameSet().isWhiteTurn()) + "\n"
 			+ "Utility : " + std::to_string(_gameTree.root()->biaisedGameScoreUtility()) + "\n"
 			+ "Checked node count : " + std::to_string(_gameTree.root()->size()) + "\n"

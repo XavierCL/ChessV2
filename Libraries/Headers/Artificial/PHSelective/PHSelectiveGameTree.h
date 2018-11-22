@@ -95,6 +95,10 @@ private:
 	void develop()
 	{
 		_realNodeCount += _root->develop(_randomGenerator, _nodeRepository, _legalCache);
+		_realNodeCount += _root->develop(_randomGenerator, _nodeRepository, _legalCache);
+		_realNodeCount += _root->develop(_randomGenerator, _nodeRepository, _legalCache);
+		_realNodeCount += _root->develop(_randomGenerator, _nodeRepository, _legalCache);
+		_realNodeCount += _root->developBiaised(_randomGenerator, _nodeRepository, _legalCache);
 	}
 
 	void updateNewRoot(const GameSet& gameSet)

@@ -22,17 +22,17 @@ public:
 		_isLeaf(true),
 		_isTerminal(gameSet.getStatus() != GameStatus::LIVE),
 		_size(1),
-		_gameScore(estimateScore(gameSet)),
+		_gameScore(estimateScore(gameSet), gameSet.isWhiteTurn()),
 		_biaisedGameScore(estimateScore(gameSet))
 	{}
 
-	PHSelectiveGameNode(const GameSet &gameSet, const PHGameScore &parentGameScore, const PHBiaisedGameScore &parentBiaisedGameScore)
+	PHSelectiveGameNode(const GameSet &gameSet, const PHBiaisedGameScore &parentBiaisedGameScore)
 		: _gameSet(gameSet),
 		_isLeaf(true),
 		_isTerminal(gameSet.getStatus() != GameStatus::LIVE),
 		_size(1),
-		_gameScore(PHGameScore(estimateScore(gameSet), parentGameScore)),
-		_biaisedGameScore(PHBiaisedGameScore(estimateScore(gameSet), parentBiaisedGameScore))
+		_gameScore(estimateScore(gameSet), gameSet.isWhiteTurn()),
+		_biaisedGameScore(estimateScore(gameSet), parentBiaisedGameScore)
 	{}
 
 	size_t removeAllBut(const std::shared_ptr<PHSelectiveGameNode> &kept, FixedUnorderedMap<Board, std::shared_ptr<PHSelectiveGameNode>, BoardHash> &repository)
@@ -74,6 +74,27 @@ public:
 		return _size;
 	}
 
+	template <typename EngineType>
+	std::shared_ptr<PHSelectiveGameNode> biaisedChosenOne(EngineType& randomEngine) const
+	{
+		std::vector<std::shared_ptr<PHSelectiveGameNode>> chosens{ _children[0] };
+
+		std::for_each(_children.begin() + 1, _children.end(), [this, &chosens](const std::shared_ptr<PHSelectiveGameNode> &nextCandidate)
+		{
+			if (nextCandidate->_biaisedGameScore.biaisedWinOver(chosens.front()->_biaisedGameScore, _gameSet.isWhiteTurn()))
+			{
+				chosens = { nextCandidate };
+			}
+			else if (nextCandidate->_biaisedGameScore.scoresEquals(chosens.front()->_biaisedGameScore))
+			{
+				chosens.push_back(nextCandidate);
+			}
+		});
+
+		std::uniform_int_distribution<int> aDistributor(0, chosens.size() - 1);
+		return chosens[aDistributor(randomEngine)];
+	}
+
 	double biaisedGameScoreUtility() const
 	{
 		return _biaisedGameScore.biaisedUtility();
@@ -99,6 +120,26 @@ public:
 		}
 	}
 
+	template <typename EngineType>
+	size_t developBiaised(EngineType& randomEngine, FixedUnorderedMap<Board, std::shared_ptr<PHSelectiveGameNode>, BoardHash> &repository, FixedUnorderedMap<Board, std::shared_ptr<std::vector<Move const *>>, BoardHash> &legalCache)
+	{
+		if (_isTerminal)
+		{
+			return 0;
+		}
+		else
+		{
+			if (_isLeaf)
+			{
+				return developImmediateChildren(repository, legalCache);
+			}
+			else
+			{
+				return biaisedNonTerminalChosenOne(randomEngine)->developBiaised(randomEngine, repository, legalCache);
+			}
+		}
+	}
+
 	std::shared_ptr<PHSelectiveGameNode> findChild(const Board& board) const
 	{
 		for (const auto child : _children)
@@ -116,27 +157,6 @@ public:
 		return _gameSet;
 	}
 
-	template <typename EngineType>
-	std::shared_ptr<PHSelectiveGameNode> biaisedChosenOne(EngineType& randomEngine) const
-	{
-		std::vector<std::shared_ptr<PHSelectiveGameNode>> chosens{ _children[0] };
-
-		std::for_each(_children.begin() + 1, _children.end(), [this, &chosens](const std::shared_ptr<PHSelectiveGameNode> &nextCandidate)
-		{
-			if (nextCandidate->_biaisedGameScore.biaisedWinOver(_gameSet.isWhiteTurn(), chosens.front()->_biaisedGameScore))
-			{
-				chosens = { nextCandidate };
-			}
-			else if (nextCandidate->_biaisedGameScore.scoresEquals(chosens.front()->_biaisedGameScore))
-			{
-				chosens.push_back(nextCandidate);
-			}
-		});
-
-		std::uniform_int_distribution<int> aDistributor(0, chosens.size() - 1);
-		return chosens[aDistributor(randomEngine)];
-	}
-
 	bool isTerminal() const
 	{
 		return _isTerminal;
@@ -152,17 +172,69 @@ private:
 			throw std::exception("Queried chosen one when the node was terminal");
 		}
 
-		std::vector<std::shared_ptr<PHSelectiveGameNode>> chosens;
-		std::copy_if(_children.begin(), _children.end(), std::back_inserter(chosens),
-			[this](const std::shared_ptr<PHSelectiveGameNode> &node)
+		size_t firstNonTerminalChildIndex = 0;
+		while (firstNonTerminalChildIndex < _children.size())
 		{
-			return _gameScore.scoreEquals(node->_gameScore);
+			if (!_children[firstNonTerminalChildIndex]->isTerminal())
+			{
+				break;
+			}
+			++firstNonTerminalChildIndex;
+		}
+		std::vector<std::shared_ptr<PHSelectiveGameNode>> chosens{ _children[firstNonTerminalChildIndex] };
+
+		std::for_each(_children.begin() + firstNonTerminalChildIndex + 1, _children.end(), [this, &chosens](const std::shared_ptr<PHSelectiveGameNode> &nextCandidate)
+		{
+			if (!nextCandidate->isTerminal())
+			{
+				if (nextCandidate->_gameScore.winsOver(chosens.front()->_gameScore))
+				{
+					chosens = { nextCandidate };
+				}
+				else if (nextCandidate->_gameScore.probabilityEquals(chosens.front()->_gameScore))
+				{
+					chosens.push_back(nextCandidate);
+				}
+			}
 		});
 
-		if (chosens.size() < 1)
+		std::uniform_int_distribution<int> aDistributor(0, chosens.size() - 1);
+		return chosens[aDistributor(randomEngine)];
+	}
+
+	template <typename EngineType>
+	std::shared_ptr<PHSelectiveGameNode> biaisedNonTerminalChosenOne(EngineType& randomEngine) const
+	{
+		if (_isTerminal)
 		{
-			throw std::exception("GameScore didn't equal child's");
+			throw std::exception("Queried chosen one when the node was terminal");
 		}
+
+		size_t firstNonTerminalChildIndex = 0;
+		while (firstNonTerminalChildIndex < _children.size())
+		{
+			if (!_children[firstNonTerminalChildIndex]->isTerminal())
+			{
+				break;
+			}
+			++firstNonTerminalChildIndex;
+		}
+		std::vector<std::shared_ptr<PHSelectiveGameNode>> chosens{ _children[firstNonTerminalChildIndex] };
+
+		std::for_each(_children.begin() + firstNonTerminalChildIndex + 1, _children.end(), [this, &chosens](const std::shared_ptr<PHSelectiveGameNode> &nextCandidate)
+		{
+			if (!nextCandidate->isTerminal())
+			{
+				if (nextCandidate->_biaisedGameScore.biaisedWinOver(chosens.front()->_biaisedGameScore, _gameSet.isWhiteTurn()))
+				{
+					chosens = { nextCandidate };
+				}
+				else if (nextCandidate->_biaisedGameScore.scoresEquals(chosens.front()->_biaisedGameScore))
+				{
+					chosens.push_back(nextCandidate);
+				}
+			}
+		});
 
 		std::uniform_int_distribution<int> aDistributor(0, chosens.size() - 1);
 		return chosens[aDistributor(randomEngine)];
@@ -189,7 +261,7 @@ private:
 			std::shared_ptr<PHSelectiveGameNode> childNode(repository.get(child.currentBoard()).filter([&child](const std::shared_ptr<PHSelectiveGameNode> &foundNode) {
 				return foundNode->gameSet() == child;
 			}).getOrElse([this, &child, &repository, &realNewNodeCount]() {
-				const auto node = std::make_shared<PHSelectiveGameNode>(child, _gameScore, _biaisedGameScore);
+				const auto node = std::make_shared<PHSelectiveGameNode>(child, _biaisedGameScore);
 				++realNewNodeCount;
 				repository.set(child.currentBoard(), node);
 				return node;
@@ -216,9 +288,9 @@ private:
 		if (gameSet.getStatus() == GameStatus::FIFTY_MOVE || gameSet.getStatus() == GameStatus::NO_LEGAL_MOVE || gameSet.getStatus() == GameStatus::THREEFOLD_REPETITION)
 			return 0;
 		else if (gameSet.getStatus() == GameStatus::WHITE_WIN)
-			return 100;
+			return 1;
 		else if (gameSet.getStatus() == GameStatus::BLACK_WIN)
-			return -100;
+			return -1;
 		else
 		{
 			double whiteScore = 0;
@@ -237,7 +309,7 @@ private:
 
 			const double score = (whiteScore / (blackScore + 1)) - (blackScore / (whiteScore + 1));
 
-			return score;
+			return score / (1 + abs(score));
 		}
 	}
 

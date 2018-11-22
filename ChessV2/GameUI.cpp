@@ -28,7 +28,10 @@ GameUI::GameUI()
 	_isWhiteBottom = true;
 	BitBoardMoveConstants::initialize();
 	Logger::registerInfo([this](const std::string& message) {
-		OutputDebugStringA(message.c_str());
+		OutputDebugStringA(("INFO: " + message).c_str());
+	});
+	Logger::registerTrace([this](const std::string& message) {
+		OutputDebugStringA(("TRACE: " + message).c_str());
 	});
 }
 
@@ -450,7 +453,13 @@ void GameUI::startNewGame()
 		}
 		if (_isComputerOnly)
 		{
-			_artificial2 = new HeuristicSelectiveArtificial(7000, 70000, _randomEngineGenerator.next(), FixedUnorderedMap<Board, std::shared_ptr<HeuristicSelectiveGameNode>, BoardHash>(1000000), FixedUnorderedMap<Board, std::shared_ptr<std::vector<Move const *>>, BoardHash>(1000000));
+			_artificial2 = new HeuristicSelectiveArtificial(
+				5000,
+				700000,
+				_randomEngineGenerator.next(),
+				FixedUnorderedMap<Board, std::shared_ptr<HeuristicSelectiveGameNode>, BoardHash>(1000000),
+				FixedUnorderedMap<Board, std::shared_ptr<std::vector<Move const *>>, BoardHash>(1000000)
+			);
 		}
 		if (!_isComputerWhite)
 		{
